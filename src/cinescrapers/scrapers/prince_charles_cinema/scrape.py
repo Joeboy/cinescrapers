@@ -53,13 +53,18 @@ def scrape() -> list[dict[str, Any]]:
 
             for date_str, time_strs in grouped.items():
                 for time_str in time_strs:
-                    date_and_time = f"{date_str} {time_str}"
+                    date_and_time_str = f"{date_str} {time_str}"
+                    date_and_time = dateparser.parse(date_and_time_str)
+                    if date_and_time is None:
+                        raise RuntimeError(
+                            f"Could not parse '{date_and_time_str} as a date/time string"
+                        )
 
                     showtime_data = {
                         "cinema": CINEMA_NAME,
                         "title": title,
                         "link": link,
-                        "datetime": dateparser.parse(date_and_time),
+                        "datetime": date_and_time,
                         "description": description,
                         "image_src": img_src,
                     }

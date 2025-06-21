@@ -14,10 +14,10 @@ machine-readable formats.
 ## Done
 
 * Prince Charles Cinema
+* Close-Up Film Centre
 
 ## TODO
 
-* Close-Up Film Centre
 * Barbican Cinemas
 * Kiln Theatre
 * Arthouse Crouch End
@@ -32,6 +32,6 @@ machine-readable formats.
 ## Usage
 
 * Make sure you have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed
-* `uv run main.py` to see a list of scrapers. As of now there's only one, so:
 * `uv run main.py prince_charles_cinema`, to scrape the PCC website's listings
   into an sqlite file (`showtimes.db`)
+* `uv run main.py` to see a list of scrapers (all two of them).
