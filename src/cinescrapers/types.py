@@ -14,5 +14,6 @@ class ShowTime(BaseModel):
 
 
 class EnrichedShowTime(ShowTime):
+    id: str
     last_updated: datetime.datetime
     scraper: str

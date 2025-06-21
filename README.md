@@ -35,6 +35,6 @@ machine-readable formats.
 
 * Make sure you have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed
 * `cd src/`
-* `uv run python -m cinescrapers prince_charles_cinema`, to scrape the PCC website's listings
-  into an sqlite file (`showtimes.db`)
-* `uv run python -m cinescrapers` to see a list of scrapers.
+* `uv run python -m cinescrapers ica`, to run the `ica` scraper, which will
+  scrape the ICA website's film listings into an sqlite file (`showtimes.db`)
+* `uv run python -m cinescrapers --list-scrapers` to see the list of scrapers.
