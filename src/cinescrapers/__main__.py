@@ -6,12 +6,10 @@ import importlib
 from typing import Callable
 from datetime import datetime
 
-sys.path.append(str(Path(__file__).parent / "src"))
-
 
 def get_scrapers() -> list[str]:
     """Get a list of available scraper names."""
-    scrapers_dir = Path(__file__).parent / "src" / "cinescrapers" / "scrapers"
+    scrapers_dir = Path(__file__).parent / "scrapers"
     possible_scrapers = [
         folder.name
         for folder in scrapers_dir.iterdir()
