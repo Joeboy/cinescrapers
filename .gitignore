@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Node stuff
+react_app/my-app/node_modules/
+react_app/my-app/dist/
