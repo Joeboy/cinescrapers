@@ -13,9 +13,12 @@ machine-readable formats.
 
 ## Done
 
+(sort of done, anyway, there are very probably bugs)
+
 * Prince Charles Cinema
 * Close-Up Film Centre
 * BFI Southbank
+* The ICA
 
 ## TODO
 
@@ -26,7 +29,6 @@ machine-readable formats.
 * The Arzner
 * The Castle Cinema
 * The Lumiere Romford
-* The ICA
 * The Rio (Dalston)
 
 ## Usage
