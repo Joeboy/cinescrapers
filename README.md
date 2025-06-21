@@ -15,6 +15,7 @@ machine-readable formats.
 
 * Prince Charles Cinema
 * Close-Up Film Centre
+* BFI Southbank
 
 ## TODO
 
@@ -22,7 +23,6 @@ machine-readable formats.
 * Kiln Theatre
 * Arthouse Crouch End
 * BFI IMAX
-* BFI Southbank
 * The Arzner
 * The Castle Cinema
 * The Lumiere Romford
@@ -35,4 +35,4 @@ machine-readable formats.
 * `cd src/`
 * `uv run python -m cinescrapers prince_charles_cinema`, to scrape the PCC website's listings
   into an sqlite file (`showtimes.db`)
-* `uv run python -m cinescrapers` to see a list of scrapers (all two of them).
+* `uv run python -m cinescrapers` to see a list of scrapers.

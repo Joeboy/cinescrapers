@@ -9,11 +9,15 @@ dependencies = [
     "dateparser>=1.2.1",
     "playwright>=1.52.0",
     "pydantic>=2.11.7",
+    "requests>=2.32.4",
     "rich>=14.0.0",
 ]
 
 [dependency-groups]
-dev = ["ruff>=0.12.0"]
+dev = [
+    "isort>=6.0.1",
+    "ruff>=0.12.0",
+]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
