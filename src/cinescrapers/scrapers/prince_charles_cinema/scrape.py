@@ -1,12 +1,13 @@
 from collections import defaultdict
-from typing import Any
 import dateparser
 from playwright.sync_api import sync_playwright
+
+from cinescrapers.types import ShowTime
 
 CINEMA_NAME = "Prince Charles Cinema"
 
 
-def scrape() -> list[dict[str, Any]]:
+def scrape() -> list[ShowTime]:
     url = "https://princecharlescinema.com/whats-on/"
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)

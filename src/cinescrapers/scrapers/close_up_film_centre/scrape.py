@@ -1,6 +1,6 @@
 from datetime import datetime
 import re
-from typing import Any
+from cinescrapers.types import ShowTime
 from playwright.sync_api import sync_playwright
 from rich import print
 
@@ -12,7 +12,7 @@ URL = f"{BASE_URL}/film_programmes/"
 DATE_RE = re.compile(r".*(\d\d\.\d\d\.\d\d)$")
 
 
-def scrape() -> list[dict[str, Any]]:
+def scrape() -> list[ShowTime]:
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
