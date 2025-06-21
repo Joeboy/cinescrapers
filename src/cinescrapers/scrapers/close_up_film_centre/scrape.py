@@ -1,6 +1,7 @@
 from datetime import datetime
 import re
 from cinescrapers.types import ShowTime
+from cinescrapers.exceptions import ScrapingError
 from playwright.sync_api import sync_playwright
 from rich import print
 
@@ -14,7 +15,7 @@ DATE_RE = re.compile(r".*(\d\d\.\d\d\.\d\d)$")
 
 def scrape() -> list[ShowTime]:
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.goto(URL)
 
@@ -44,6 +45,8 @@ def scrape() -> list[ShowTime]:
             description = film_page.locator('meta[name="description"]').get_attribute(
                 "content"
             )
+            if description is None:
+                raise ScrapingError(f"Could not get description from {link}")
             calender_table = film_page.locator("div.booking_calender table")
             if calender_table.count() == 0:
                 print(f"Skipping {link} as there's no calendar on that page")
@@ -54,12 +57,16 @@ def scrape() -> list[ShowTime]:
                 cells = row.locator("td")
                 assert cells.count() == 4
                 title = cells.nth(0).text_content()
+                if title is None:
+                    raise ScrapingError(
+                        f"Could not get title element from calendar at {link}"
+                    )
                 date_str = cells.nth(1).text_content()
                 if date_str is None:
-                    raise RuntimeError(f"Failed to read date at {link}")
+                    raise ScrapingError(f"Failed to read date at {link}")
                 m = DATE_RE.match(date_str)
                 if m is None:
-                    raise RuntimeError(f"Failed to interpret date at {link}")
+                    raise ScrapingError(f"Failed to interpret date at {link}")
                 date_str = m.group(1)
                 time_str = cells.nth(2).text_content().strip()  # type: ignore
                 date_and_time_str = f"{date_str} {time_str}"
@@ -67,14 +74,14 @@ def scrape() -> list[ShowTime]:
                     date_and_time_str, "%d.%m.%y %I:%M %p"
                 )
 
-                showtime_data = {
-                    "cinema": CINEMA_NAME,
-                    "title": title,
-                    "link": link,
-                    "datetime": date_and_time,
-                    "description": description,
-                    "image_src": img_src,
-                }
+                showtime_data = ShowTime(
+                    cinema=CINEMA_NAME,
+                    title=title,
+                    link=link,
+                    datetime=date_and_time,
+                    description=description,
+                    image_src=img_src,
+                )
                 # print(showtime_data)
                 showtimes.append(showtime_data)
 

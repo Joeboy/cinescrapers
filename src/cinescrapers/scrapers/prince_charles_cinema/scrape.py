@@ -3,6 +3,7 @@ import dateparser
 from playwright.sync_api import sync_playwright
 
 from cinescrapers.types import ShowTime
+from cinescrapers.exceptions import ScrapingError
 
 CINEMA_NAME = "Prince Charles Cinema"
 
@@ -10,7 +11,7 @@ CINEMA_NAME = "Prince Charles Cinema"
 def scrape() -> list[ShowTime]:
     url = "https://princecharlescinema.com/whats-on/"
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.goto(url)
 
@@ -27,6 +28,8 @@ def scrape() -> list[ShowTime]:
             a = fd.locator("a.liveeventtitle")
             title = a.inner_text()
             link = a.get_attribute("href")
+            if link is None:
+                raise ScrapingError(f"Could not get link for {title}")
 
             desc_paras = fd.locator("div.jacro-formatted-text p").all_inner_texts()
             description = "".join(desc_paras)
@@ -57,19 +60,18 @@ def scrape() -> list[ShowTime]:
                     date_and_time_str = f"{date_str} {time_str}"
                     date_and_time = dateparser.parse(date_and_time_str)
                     if date_and_time is None:
-                        raise RuntimeError(
+                        raise ScrapingError(
                             f"Could not parse '{date_and_time_str} as a date/time string"
                         )
 
-                    showtime_data = {
-                        "cinema": CINEMA_NAME,
-                        "title": title,
-                        "link": link,
-                        "datetime": date_and_time,
-                        "description": description,
-                        "image_src": img_src,
-                    }
-                    # print(film_data)
+                    showtime_data = ShowTime(
+                        cinema= CINEMA_NAME,
+                        title= title,
+                        link= link,
+                        datetime= date_and_time,
+                        description= description,
+                        image_src= img_src,
+                    )
                     showtimes.append(showtime_data)
 
         page.close()

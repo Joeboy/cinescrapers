@@ -1,14 +1,18 @@
-from typing import TypedDict
+import datetime
 
 
-class DateTimeStr(str):
-    pass
+from pydantic import BaseModel
 
 
-class ShowTime(TypedDict):
+class ShowTime(BaseModel):
     cinema: str
     title: str
     link: str
-    datetime: DateTimeStr
+    datetime: datetime.datetime
     description: str
     image_src: str | None
+
+
+class EnrichedShowTime(ShowTime):
+    last_updated: datetime.datetime
+    scraper: str

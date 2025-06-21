@@ -5,6 +5,7 @@ from pathlib import Path
 import importlib
 from typing import Callable
 from datetime import datetime
+from cinescrapers.types import EnrichedShowTime
 
 
 def get_scrapers() -> list[str]:
@@ -38,18 +39,9 @@ def get_scraper(scraper_name: str) -> Callable:
     return scrape
 
 
-def serialize_record(record: dict) -> dict:
-    """Convert datetimes to strings (otherwise sqlite complains)"""
-    return {
-        key: value.strftime("%Y-%m-%d %H:%M:%S")
-        if isinstance(value, datetime)
-        else value
-        for key, value in record.items()
-    }
-
-
-def scrape_to_sqlite(scraper: Callable) -> None:
+def scrape_to_sqlite(scraper_name: str) -> None:
     t = time.perf_counter()
+    scraper = get_scraper(scraper_name)
     showtimes = scraper()
     elapsed = time.perf_counter() - t
     print(f"Scraped {len(showtimes)} showtimes in {elapsed:.2f} seconds.")
@@ -65,16 +57,24 @@ def scrape_to_sqlite(scraper: Callable) -> None:
             datetime TEXT,
             description TEXT,
             image_src TEXT,
+            last_updated TEXT,
+            scraper TEXT,
             UNIQUE(cinema, title, datetime) ON CONFLICT REPLACE
         )
     """)
     query = """
-        INSERT INTO showtimes (cinema, title, link, datetime, description, image_src)
-        VALUES (:cinema, :title, :link, :datetime, :description, :image_src)
+        INSERT INTO showtimes (cinema, title, link, datetime, description, image_src, last_updated, scraper)
+        VALUES (:cinema, :title, :link, :datetime, :description, :image_src, :last_updated, :scraper)
     """
 
-    showtimes = [serialize_record(showtime) for showtime in showtimes]
-    cursor.executemany(query, showtimes)
+    now = datetime.now()
+    enriched_showtimes = [
+        EnrichedShowTime(**s.model_dump(), last_updated=now, scraper=scraper_name)
+        for s in showtimes
+    ]
+
+    rows = [s.model_dump(mode="json") for s in enriched_showtimes]
+    cursor.executemany(query, rows)
     conn.commit()
     conn.close()
 
@@ -90,8 +90,7 @@ def main() -> None:
         sys.exit(1)
 
     scraper_name = sys.argv[1]
-    scraper = get_scraper(scraper_name)
-    scrape_to_sqlite(scraper)
+    scrape_to_sqlite(scraper_name)
 
 
 if __name__ == "__main__":

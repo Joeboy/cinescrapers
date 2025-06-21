@@ -32,6 +32,7 @@ machine-readable formats.
 ## Usage
 
 * Make sure you have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed
-* `uv run main.py prince_charles_cinema`, to scrape the PCC website's listings
+* `cd src/`
+* `uv run python -m cinescrapers prince_charles_cinema`, to scrape the PCC website's listings
   into an sqlite file (`showtimes.db`)
-* `uv run main.py` to see a list of scrapers (all two of them).
+* `uv run python -m cinescrapers` to see a list of scrapers (all two of them).
