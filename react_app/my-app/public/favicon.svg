@@ -1,0 +1,29 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 64 64"
+  width="64"
+  height="64"
+  fill="black"
+>
+  <rect x="8" y="8" width="48" height="48" rx="4" ry="4" stroke="black" stroke-width="4" fill="white" />
+  
+  <!-- Film strip perforations left -->
+  <circle cx="12" cy="16" r="2" fill="black" />
+  <circle cx="12" cy="24" r="2" fill="black" />
+  <circle cx="12" cy="32" r="2" fill="black" />
+  <circle cx="12" cy="40" r="2" fill="black" />
+  <circle cx="12" cy="48" r="2" fill="black" />
+
+  <!-- Film strip perforations right -->
+  <circle cx="52" cy="16" r="2" fill="black" />
+  <circle cx="52" cy="24" r="2" fill="black" />
+  <circle cx="52" cy="32" r="2" fill="black" />
+  <circle cx="52" cy="40" r="2" fill="black" />
+  <circle cx="52" cy="48" r="2" fill="black" />
+
+  <!-- Middle film frames -->
+  <rect x="20" y="16" width="24" height="8" fill="black" />
+  <rect x="20" y="28" width="24" height="8" fill="black" />
+  <rect x="20" y="40" width="24" height="8" fill="black" />
+</svg>
+
