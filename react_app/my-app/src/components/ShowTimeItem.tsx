@@ -32,7 +32,7 @@ const ShowTimeItem: FC<Props> = ({ showtime }) => {
         padding: '0.5rem 0',
         borderBottom: '1px solid #ddd',
         textDecoration: 'none',
-        color: '#000',
+        color: '#444',
       }}
     >
       <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>
