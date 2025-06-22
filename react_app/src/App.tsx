@@ -9,7 +9,7 @@ const App: FC = () => {
   useEffect(() => {
     fetch('https://data.filmhose.uk/cinescrapers.json')
       .then((res) => res.json())
-      .then(setData);
+      .then(data => setData(data as ShowTime[]));
   }, []);
 
   const now = new Date();

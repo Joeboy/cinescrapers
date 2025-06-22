@@ -1,0 +1,9 @@
+name = "filmhose"
+main = "src/worker.ts"
+compatibility_date = "2025-06-22"
+
+[site]
+bucket = "./dist"
+
+[build]
+command = "npm --prefix react_app run build"
