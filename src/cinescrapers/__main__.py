@@ -110,7 +110,7 @@ def dump_to_json() -> None:
 
     data = [dict(zip(columns, row)) for row in rows]
 
-    dest_file = Path(__file__).parent / "showtimes.json"
+    dest_file = Path(__file__).parent / "cinescrapers.json"
     with open(dest_file, "w") as f:
         json.dump(data, f)
     conn.commit()

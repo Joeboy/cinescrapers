@@ -7,7 +7,7 @@ const App: FC = () => {
   const [data, setData] = useState<ShowTime[]>([]);
 
   useEffect(() => {
-    fetch('https://bigscreen.org.uk/static/showtimes.json')
+    fetch('https://data.filmhose.uk/cinescrapers.json')
       .then((res) => res.json())
       .then(setData);
   }, []);
