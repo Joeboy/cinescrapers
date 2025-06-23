@@ -1,12 +1,18 @@
 import argparse
+import base64
+import datetime
+import hashlib
+import importlib
 import json
 import sqlite3
 import sys
 import time
 from pathlib import Path
-import importlib
 from typing import Callable
-from datetime import datetime
+
+import humanize
+from rich import print
+
 from cinescrapers.types import EnrichedShowTime, ShowTime
 
 
@@ -41,9 +47,47 @@ def get_scraper(scraper_name: str) -> Callable:
     return scrape
 
 
+def print_stats() -> None:
+    """Print some stats about the database."""
+    conn = sqlite3.connect("showtimes.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM showtimes")
+    count = cursor.fetchone()[0]
+    cursor.execute("SELECT DISTINCT cinema FROM showtimes")
+    cinemas = cursor.fetchall()
+
+    print(f"Total showtimes: {count}")
+    print(f"Distinct cinemas: {len(cinemas)}")
+    print()
+
+    for scraper in get_scrapers():
+        cursor.execute(
+            "SELECT COUNT(*), MAX(last_updated) FROM showtimes WHERE scraper = ?",
+            (scraper,),
+        )
+        scraper_count, latest_update = cursor.fetchone()
+        if latest_update:
+            latest_update = datetime.datetime.fromisoformat(latest_update)
+        print(scraper)
+        print("-" * len(scraper))
+
+        print(f"Showtimes: {scraper_count}")
+        if latest_update is None:
+            print("No updates found")
+        else:
+            elapsed = datetime.datetime.now() - latest_update
+            print(f"Last updated: {humanize.naturaltime(elapsed)} ago")
+        print()
+
+    conn.close()
+
+
 def get_unique_identifier(st: ShowTime) -> str:
+    """Build a unique identifier for a showtime"""
     s = f"{st.cinema}-{st.title}-{st.datetime}"
-    return s
+    digest = hashlib.sha256(s.encode("utf-8")).digest()
+    b64 = base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
+    return b64[:32]  # Truncate to sensible length
 
 
 def scrape_to_sqlite(scraper_name: str) -> None:
@@ -59,23 +103,30 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     # TODO: Probably ought to figure out some migration system
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS showtimes (
-            cinema TEXT,
-            title TEXT,
-            link TEXT,
-            datetime TEXT,
+            id TEXT PRIMARY KEY,
+            cinema TEXT NOT NULL,
+            title TEXT NOT NULL,
+            datetime TEXT NOT NULL,
+            link TEXT NOT NULL,
             description TEXT,
             image_src TEXT,
-            last_updated TEXT,
-            scraper TEXT,
-            UNIQUE(cinema, title, datetime) ON CONFLICT REPLACE
+            last_updated TEXT NOT NULL,
+            scraper TEXT NOT NULL
         )
     """)
     query = """
-        INSERT INTO showtimes (cinema, title, link, datetime, description, image_src, last_updated, scraper)
-        VALUES (:cinema, :title, :link, :datetime, :description, :image_src, :last_updated, :scraper)
+        INSERT INTO showtimes (id, cinema, title, link, datetime, description, image_src, last_updated, scraper)
+        VALUES (:id, :cinema, :title, :link, :datetime, :description, :image_src, :last_updated, :scraper)
+        ON CONFLICT(id) DO UPDATE SET
+            link = excluded.link,
+            description = excluded.description,
+            image_src = excluded.image_src,
+            last_updated = excluded.last_updated,
+            scraper = excluded.scraper
+
     """
 
-    now = datetime.now()
+    now = datetime.datetime.now()
     enriched_showtimes = [
         EnrichedShowTime(
             **s.model_dump(),
@@ -94,7 +145,7 @@ def scrape_to_sqlite(scraper_name: str) -> None:
 
 def dump_to_json() -> None:
     """Dump the contents of the db to a json file"""
-    now_str = datetime.now().isoformat(timespec="seconds")
+    now_str = datetime.datetime.now().isoformat(timespec="seconds")
     conn = sqlite3.connect("showtimes.db")
     cursor = conn.cursor()
     cursor.execute(
@@ -111,8 +162,15 @@ def dump_to_json() -> None:
     data = [dict(zip(columns, row)) for row in rows]
 
     dest_file = Path(__file__).parent / "cinescrapers.json"
+    # Sadly, it seems like we can't do this due to the file getting an additional
+    # "chunked" encoding from R2
+    # with gzip.open(dest_file, "wt", encoding="utf-8") as f:
+    #     json.dump(data, f)
+
+    # So let's just write regular, bloaty json for now
     with open(dest_file, "w") as f:
         json.dump(data, f)
+
     conn.commit()
     conn.close()
 
@@ -125,13 +183,18 @@ def main() -> None:
     parser.add_argument(
         "--list-scrapers", action="store_true", help="List available scrapers"
     )
+    parser.add_argument(
+        "--stats", action="store_true", help="See some stats about the db"
+    )
     parser.add_argument("scraper", nargs="?", help="Run scraper")
 
     args = parser.parse_args()
-    chosen = sum(bool(x) for x in [args.dump_json, args.list_scrapers, args.scraper])
+    chosen = sum(
+        bool(x) for x in [args.dump_json, args.list_scrapers, args.stats, args.scraper]
+    )
     if chosen > 1:
         parser.error(
-            "Arguments --dump-json, --list-scrapers, and scraper are mutually exclusive."
+            "Arguments --dump-json, --list-scrapers, --stats and scraper are mutually exclusive."
         )
 
     if args.scraper:
@@ -145,6 +208,8 @@ def main() -> None:
             print(f" - {scraper}")
         print("\n")
         sys.exit(1)
+    elif args.stats:
+        print_stats()
     else:
         parser.print_help()
 
