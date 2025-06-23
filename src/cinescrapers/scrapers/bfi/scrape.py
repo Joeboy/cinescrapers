@@ -19,10 +19,11 @@ def scrape() -> list[ShowTime]:
         listings_container = index_page.locator("div.Rich-text")
 
         assert listings_container.count() == 1
-        print(listings_container.inner_html())
+        # print(listings_container.inner_html())
         lis = listings_container.locator("ul > li > a")
 
         for i in range(lis.count()):
+            print(f"Film {1+i} of {lis.count()}")
             li = lis.nth(i)
             title = li.inner_text()
             href = li.get_attribute("href")
@@ -30,7 +31,7 @@ def scrape() -> list[ShowTime]:
                 raise ScrapingError(f"Could not get href for {title}")
             if not href.startswith("https://"):
                 href = f"https://whatson.bfi.org.uk/Online/{href}"
-            print(f"{href=}", type(href))
+            # print(f"{href=}", type(href))
             film_page = browser.new_page()
             film_page.goto(href)
             articleContext = film_page.evaluate("articleContext")
@@ -66,7 +67,7 @@ def scrape() -> list[ShowTime]:
                     description=description,
                     image_src=img_src,
                 )
-                print(showtime)
+                # print(showtime)
                 showtimes.append(showtime)
             film_page.close()
 

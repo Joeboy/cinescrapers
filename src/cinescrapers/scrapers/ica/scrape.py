@@ -41,11 +41,14 @@ def scrape() -> list[ShowTime]:
                 raise ScrapingError("Failed to get title")
 
             img_e = a.locator("img").first
-            img_src = img_e.get_attribute("src")
-            if img_src is None:
-                raise ScrapingError("Could not get img_src")
-            if img_src.startswith("//"):
-                img_src = f"https:{img_src}"
+            if img_e.count() > 0:
+                img_src = img_e.get_attribute("src")
+                if img_src is None:
+                    raise ScrapingError("Failed to get image src")
+                if img_src.startswith("//"):
+                    img_src = f"https:{img_src}"
+            else:
+                img_src = None
             description_e = a.locator("div.description").first
             description = description_e.inner_text()
 
