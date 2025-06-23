@@ -1,6 +1,7 @@
 import argparse
 import base64
 import datetime
+import gzip
 import hashlib
 import importlib
 import json
@@ -162,14 +163,16 @@ def dump_to_json() -> None:
     data = [dict(zip(columns, row)) for row in rows]
 
     dest_file = Path(__file__).parent / "cinescrapers.json"
-    # Sadly, it seems like we can't do this due to the file getting an additional
-    # "chunked" encoding from R2
-    # with gzip.open(dest_file, "wt", encoding="utf-8") as f:
-    #     json.dump(data, f)
 
-    # So let's just write regular, bloaty json for now
-    with open(dest_file, "w") as f:
+    # In order for the gzip file to work on Chromium I had to set up
+    # a cloudflare rule to write the content-encoding: gzip header.
+    # Without that, for some reason cloudflare sets it as "gzip,aws-chunked",
+    # which doesn't work on Chromium
+    with gzip.open(dest_file, "wt", encoding="utf-8") as f:
         json.dump(data, f)
+
+    # with open(dest_file, "w") as f:
+    #     json.dump(data, f)
 
     conn.commit()
     conn.close()
