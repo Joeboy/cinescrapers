@@ -6,10 +6,10 @@ in London that are on my radar.
 
 There's a lot to do just to get that far and frankly I'm not especially expert
 at web scraping, so if you're able to contribute it'd be much appreciated!
+Also if you know how to get any of this info in a more straightforward way (like
+a free API), please let me know!
 
-The roadmap is to keep working on the scrapers, and once there's enough data
-for it to be worthwhile I'll publish it, both in human-friendly and
-machine-readable formats.
+See [https://filmhose.uk] for a website that uses the scraped data.
 
 ## Done
 
@@ -30,6 +30,8 @@ machine-readable formats.
 * The Castle Cinema
 * The Lumiere Romford
 * The Rio (Dalston)
+* The Nickel
+* Sands Films
 
 ## Usage
 
