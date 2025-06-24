@@ -17,12 +17,12 @@ See [https://filmhose.uk] for a website that uses the scraped data.
 
 * Prince Charles Cinema
 * Close-Up Film Centre
+* Barbican Cinemas
 * BFI Southbank
 * The ICA
 
 ## TODO
 
-* Barbican Cinemas
 * Kiln Theatre
 * Arthouse Crouch End
 * BFI IMAX
