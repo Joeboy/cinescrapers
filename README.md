@@ -23,14 +23,32 @@ See [https://filmhose.uk] for a website that uses the scraped data.
 
 ## TODO
 
+* The Genesis
 * Kiln Theatre
 * Arthouse Crouch End
 * BFI IMAX
 * The Arzner
 * The Castle Cinema
 * The Lumiere Romford
+* Cine Lumiere, South Kensington
 * The Rio (Dalston)
 * The Nickel
+* ActOne
+* Ciné Reel
+* Electric Cinema
+* Lexi Cinema
+* Peckhamplex
+* Throwley Yard
+* Phoenix Cinema
+* David Lean Cinema
+* Regent Street Cinema
+* Chiswick Cinema
+* Garden Cinema
+* Bertha Dochouse
+* Cinema Museum, Kenninton
+* Theatreship, Canary Wharf
+* Whirled Cinema
+* [Rich Mix](https://richmix.org.uk/whats-on/cinema)
 * Sands Films
 
 ## Usage
