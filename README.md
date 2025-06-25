@@ -20,6 +20,7 @@ See [https://filmhose.uk] for a website that uses the scraped data.
 * Barbican Cinemas
 * BFI Southbank
 * The ICA
+* The Castle Cinema
 
 ## TODO
 
@@ -28,7 +29,6 @@ See [https://filmhose.uk] for a website that uses the scraped data.
 * Arthouse Crouch End
 * BFI IMAX
 * The Arzner
-* The Castle Cinema
 * The Lumiere Romford
 * Cine Lumiere, South Kensington
 * The Rio (Dalston)

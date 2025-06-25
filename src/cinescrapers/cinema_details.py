@@ -46,4 +46,13 @@ CINEMAS = [
         latitude=51.52108106753565,
         longitude=-0.09301942257770801,
     ),
+    Cinema(
+        shortname="Castle",
+        name="Castle Cinema",
+        url="https://thecastlecinema.com",
+        address="The Castle Cinema, First floor, 64 - 66 Brooksby's Walk, London, E9 6DA",
+        phone=None,
+        latitude=51.55145284798294,
+        longitude=-0.0433266894724083,
+    ),
 ]
