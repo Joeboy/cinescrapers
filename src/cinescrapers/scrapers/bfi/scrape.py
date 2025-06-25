@@ -59,9 +59,14 @@ def scrape() -> list[ShowTime]:
                 if date_and_time is None:
                     raise ScrapingError("Could not parse date and time")
 
+                if "southbank" in listing["venue_name"].lower():
+                    cinema_name = "BFI Southbank"
+                else:
+                    cinema_name = "BFI"
+
                 showtime = ShowTime(
                     cinema_shortname="BFI",
-                    cinema_name=listing["venue_name"],
+                    cinema_name=cinema_name,
                     title=title,
                     link=href,
                     datetime=date_and_time,
