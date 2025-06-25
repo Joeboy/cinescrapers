@@ -9,7 +9,7 @@ at web scraping, so if you're able to contribute it'd be much appreciated!
 Also if you know how to get any of this info in a more straightforward way (like
 a free API), please let me know!
 
-See [https://filmhose.uk] for a website that uses the scraped data.
+See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 
 ## Done
 
