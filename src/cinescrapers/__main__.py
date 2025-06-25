@@ -195,6 +195,11 @@ def export_json() -> None:
     with gzip.open(dest_file, "wt", encoding="utf-8") as f:
         json.dump(data, f)
 
+    cinemas_file = Path(__file__).parent / "cinemas.json"
+    with gzip.open(cinemas_file, "wt", encoding="utf-8") as f:
+        cinemas_data = [c.model_dump() for c in CINEMAS]
+        json.dump(cinemas_data, f)
+
     # with open(dest_file, "w") as f:
     #     json.dump(data, f)
 
