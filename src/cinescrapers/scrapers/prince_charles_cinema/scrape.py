@@ -6,6 +6,7 @@ from cinescrapers.types import ShowTime
 from cinescrapers.exceptions import ScrapingError
 
 CINEMA_NAME = "Prince Charles Cinema"
+CINEMA_SHORTNAME = "PCC"
 
 
 def scrape() -> list[ShowTime]:
@@ -65,7 +66,8 @@ def scrape() -> list[ShowTime]:
                         )
 
                     showtime_data = ShowTime(
-                        cinema= CINEMA_NAME,
+                        cinema_shortname= CINEMA_SHORTNAME,
+                        cinema_name= CINEMA_NAME,
                         title= title,
                         link= link,
                         datetime= date_and_time,

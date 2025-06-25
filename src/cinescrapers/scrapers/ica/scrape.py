@@ -7,7 +7,8 @@ from playwright.sync_api import sync_playwright
 from rich import print
 
 
-CINEMA_NAME = "ICA"
+CINEMA_NAME = "Institute of Contemporary Arts"
+CINEMA_SHORTNAME = "ICA"
 BASE_URL = "https://www.ica.art"
 INDEX_URL = f"{BASE_URL}/films"
 
@@ -68,7 +69,8 @@ def scrape() -> list[ShowTime]:
                     raise ScrapingError(f"Failed to parse date_time at {link}")
 
                 showtime_data = ShowTime(
-                    cinema=CINEMA_NAME,
+                    cinema_shortname=CINEMA_SHORTNAME,
+                    cinema_name=CINEMA_NAME,
                     title=title,
                     link=link,
                     datetime=date_time,

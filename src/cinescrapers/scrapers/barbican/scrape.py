@@ -7,6 +7,7 @@ from rich import print
 
 
 CINEMA_NAME = "Barbican"
+CINAME_SHORTNAME = "Barbican"
 BASE_URL = "https://www.barbican.org.uk"
 
 
@@ -76,11 +77,14 @@ def scrape() -> list[ShowTime]:
                             f"Could not get datetime from {bookings_url}"
                         )
                     date_and_time = datetime.fromisoformat(date_str)
-                    date_and_time = date_and_time.astimezone(ZoneInfo("Europe/London")).replace(tzinfo=None)
+                    date_and_time = date_and_time.astimezone(
+                        ZoneInfo("Europe/London")
+                    ).replace(tzinfo=None)
 
                     # print(f"{date_and_time=}")
                     showtime_data = ShowTime(
-                        cinema=CINEMA_NAME,
+                        cinema_shortname=CINAME_SHORTNAME,
+                        cinema_name=CINEMA_NAME,
                         title=title,
                         link=link,
                         datetime=date_and_time,

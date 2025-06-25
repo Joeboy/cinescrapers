@@ -23,7 +23,7 @@ def scrape() -> list[ShowTime]:
         lis = listings_container.locator("ul > li > a")
 
         for i in range(lis.count()):
-            print(f"Film {1+i} of {lis.count()}")
+            print(f"Film {1 + i} of {lis.count()}")
             li = lis.nth(i)
             title = li.inner_text()
             href = li.get_attribute("href")
@@ -60,7 +60,8 @@ def scrape() -> list[ShowTime]:
                     raise ScrapingError("Could not parse date and time")
 
                 showtime = ShowTime(
-                    cinema=listing["venue_name"],
+                    cinema_shortname="BFI",
+                    cinema_name=listing["venue_name"],
                     title=title,
                     link=href,
                     datetime=date_and_time,

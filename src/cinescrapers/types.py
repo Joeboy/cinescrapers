@@ -5,7 +5,8 @@ from pydantic import BaseModel
 
 
 class ShowTime(BaseModel):
-    cinema: str
+    cinema_shortname: str
+    cinema_name: str
     title: str
     link: str
     datetime: datetime.datetime

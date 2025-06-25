@@ -14,6 +14,7 @@ from typing import Callable
 import humanize
 from rich import print
 
+from cinescrapers.cinema_details import CINEMAS
 from cinescrapers.types import EnrichedShowTime, ShowTime
 
 
@@ -54,11 +55,11 @@ def print_stats() -> None:
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM showtimes")
     count = cursor.fetchone()[0]
-    cursor.execute("SELECT DISTINCT cinema FROM showtimes")
-    cinemas = cursor.fetchall()
+    cursor.execute("SELECT DISTINCT cinema_shortname FROM showtimes")
+    cinema_shortnames = [c for (c,) in cursor.fetchall()]
 
     print(f"Total showtimes: {count}")
-    print(f"Distinct cinemas: {len(cinemas)}")
+    print(f"Distinct cinemas: {len(cinema_shortnames)}")
     print()
 
     for scraper in get_scrapers():
@@ -85,7 +86,7 @@ def print_stats() -> None:
 
 def get_unique_identifier(st: ShowTime) -> str:
     """Build a unique identifier for a showtime"""
-    s = f"{st.cinema}-{st.title}-{st.datetime}"
+    s = f"{st.cinema_shortname}-{st.title}-{st.datetime}"
     digest = hashlib.sha256(s.encode("utf-8")).digest()
     b64 = base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
     return b64[:32]  # Truncate to sensible length
@@ -105,7 +106,8 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS showtimes (
             id TEXT PRIMARY KEY,
-            cinema TEXT NOT NULL,
+            cinema_shortname TEXT NOT NULL,
+            cinema_name TEXT NOT NULL,
             title TEXT NOT NULL,
             datetime TEXT NOT NULL,
             link TEXT NOT NULL,
@@ -116,8 +118,8 @@ def scrape_to_sqlite(scraper_name: str) -> None:
         )
     """)
     query = """
-        INSERT INTO showtimes (id, cinema, title, link, datetime, description, image_src, last_updated, scraper)
-        VALUES (:id, :cinema, :title, :link, :datetime, :description, :image_src, :last_updated, :scraper)
+        INSERT INTO showtimes (id, cinema_shortname, cinema_name, title, link, datetime, description, image_src, last_updated, scraper)
+        VALUES (:id, :cinema_shortname, :cinema_name, :title, :link, :datetime, :description, :image_src, :last_updated, :scraper)
         ON CONFLICT(id) DO UPDATE SET
             link = excluded.link,
             description = excluded.description,
