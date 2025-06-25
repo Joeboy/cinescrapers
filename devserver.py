@@ -7,10 +7,20 @@ app = Flask(__name__)
 
 
 @app.route("/cinescrapers.json")
-def serve_gzipped_json():
+def serve_showtimes():
     path = Path(__file__).parent / "src" / "cinescrapers" / "cinescrapers.json"
     response = send_file(path, mimetype="application/json")
-    response.headers['Content-Type'] = 'application/json'
+    response.headers["Content-Type"] = "application/json"
+    response.headers["Content-Encoding"] = "gzip"
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
+
+@app.route("/cinemas.json")
+def serve_cinemas():
+    path = Path(__file__).parent / "src" / "cinescrapers" / "cinemas.json"
+    response = send_file(path, mimetype="application/json")
+    response.headers["Content-Type"] = "application/json"
     response.headers["Content-Encoding"] = "gzip"
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
