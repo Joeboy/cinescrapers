@@ -147,7 +147,7 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     conn.close()
 
 
-def dump_to_json() -> None:
+def export_json() -> None:
     """Dump the contents of the db to a json file"""
     now_str = datetime.datetime.now().isoformat(timespec="seconds")
     conn = sqlite3.connect("showtimes.db")
@@ -184,7 +184,7 @@ def dump_to_json() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="CineScrapers CLI")
     parser.add_argument(
-        "--dump-json", action="store_true", help="Dump database to JSON"
+        "--export-json", action="store_true", help="Dump database to JSON"
     )
     parser.add_argument(
         "--list-scrapers", action="store_true", help="List available scrapers"
@@ -196,17 +196,18 @@ def main() -> None:
 
     args = parser.parse_args()
     chosen = sum(
-        bool(x) for x in [args.dump_json, args.list_scrapers, args.stats, args.scraper]
+        bool(x)
+        for x in [args.export_json, args.list_scrapers, args.stats, args.scraper]
     )
     if chosen > 1:
         parser.error(
-            "Arguments --dump-json, --list-scrapers, --stats and scraper are mutually exclusive."
+            "Arguments --export-json, --list-scrapers, --stats and scraper are mutually exclusive."
         )
 
     if args.scraper:
         scrape_to_sqlite(args.scraper)
-    elif args.dump_json:
-        dump_to_json()
+    elif args.export_json:
+        export_json()
     elif args.list_scrapers:
         scrapers = get_scrapers()
         print("Available scrapers:\n")
