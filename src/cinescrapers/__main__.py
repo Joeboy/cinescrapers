@@ -121,6 +121,7 @@ def scrape_to_sqlite(scraper_name: str) -> None:
         INSERT INTO showtimes (id, cinema_shortname, cinema_name, title, link, datetime, description, image_src, last_updated, scraper)
         VALUES (:id, :cinema_shortname, :cinema_name, :title, :link, :datetime, :description, :image_src, :last_updated, :scraper)
         ON CONFLICT(id) DO UPDATE SET
+            cinema_name = excluded.cinema_name,
             link = excluded.link,
             description = excluded.description,
             image_src = excluded.image_src,
