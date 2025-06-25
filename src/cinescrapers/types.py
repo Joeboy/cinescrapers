@@ -4,6 +4,16 @@ import datetime
 from pydantic import BaseModel
 
 
+class Cinema(BaseModel):
+    shortname: str
+    name: str
+    url: str
+    address: str | None
+    phone: str | None
+    latitude: float
+    longitude: float
+
+
 class ShowTime(BaseModel):
     cinema_shortname: str
     cinema_name: str

@@ -81,6 +81,27 @@ def print_stats() -> None:
             print(f"Last updated: {humanize.naturaltime(elapsed)} ago")
         print()
 
+    print("CINEMA DETAILS")
+    print("-" * len("CINEMA DETAILS"))
+    print()
+
+    with_details = set(cinema_shortnames) & set(c.shortname for c in CINEMAS)
+    missing_details = set(cinema_shortnames) - set(c.shortname for c in CINEMAS)
+
+    print("Cinemas with details:")
+    for shortname in sorted(with_details):
+        print(f" - {shortname}")
+    print()
+
+    if missing_details:
+        print("Cinemas with no details:")
+        for shortname in missing_details:
+            print(f" - {shortname}")
+        print()
+    else:
+        print("No cinemas are missing details.")
+    print()
+
     conn.close()
 
 
