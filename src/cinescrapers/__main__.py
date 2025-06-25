@@ -170,7 +170,10 @@ def scrape_to_sqlite(scraper_name: str) -> None:
 
 def export_json() -> None:
     """Dump the contents of the db to a json file"""
-    now_str = datetime.datetime.now().isoformat(timespec="seconds")
+    this_morning = datetime.datetime.combine(
+        datetime.datetime.now().date(), datetime.time.min
+    )
+    this_morning_str = this_morning.isoformat(timespec="seconds")
     conn = sqlite3.connect("showtimes.db")
     cursor = conn.cursor()
     cursor.execute(
@@ -179,7 +182,7 @@ def export_json() -> None:
         WHERE datetime >= ?
         ORDER BY datetime
     """,
-        (now_str,),
+        (this_morning_str,),
     )
     columns = [desc[0] for desc in cursor.description]
     rows = cursor.fetchall()
