@@ -1,6 +1,5 @@
 from datetime import datetime
 import json
-import re
 from cinescrapers.types import ShowTime
 from cinescrapers.exceptions import ScrapingError
 from playwright.sync_api import sync_playwright
@@ -11,8 +10,6 @@ CINEMA_SHORTNAME = "Castle"
 CINEMA_NAME = "The Castle Cinema"
 BASE_URL = "https://thecastlecinema.com"
 LISTINGS_URL = f"{BASE_URL}/listings/film/"
-
-# DATE_RE = re.compile(r".*(\d\d\.\d\d\.\d\d)$")
 
 
 def scrape() -> list[ShowTime]:

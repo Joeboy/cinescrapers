@@ -55,4 +55,13 @@ CINEMAS = [
         latitude=51.55145284798294,
         longitude=-0.0433266894724083,
     ),
+    Cinema(
+        shortname="Genesis",
+        name="The Genesis Cinema",
+        url="https://www.genesiscinema.co.uk",
+        address="93-95 Mile End Road, Whitechapel, London E1 4UJ",
+        phone="02077802000",
+        latitude=51.52127054892805,
+        longitude=-0.05122929131953246,
+    ),
 ]

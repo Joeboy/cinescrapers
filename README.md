@@ -21,10 +21,10 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * BFI Southbank
 * The ICA
 * The Castle Cinema
+* The Genesis
 
 ## TODO
 
-* The Genesis
 * Kiln Theatre
 * Arthouse Crouch End
 * BFI IMAX
