@@ -93,7 +93,7 @@ CINEMAS = [
     ),
     Cinema(
         shortname="Lexi",
-        name="The Lexi Ciname",
+        name="The Lexi Cinema",
         url="https://thelexicinema.co.uk",
         address="194b Chamberlayne Rd, London NW10 3JU",
         phone="020 3011 5523",
