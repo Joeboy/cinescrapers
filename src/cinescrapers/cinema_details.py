@@ -91,4 +91,13 @@ CINEMAS = [
         latitude=51.497788853639946,
         longitude=-0.08073756064057352,
     ),
+    Cinema(
+        shortname="Lexi",
+        name="The Lexi Ciname",
+        url="https://thelexicinema.co.uk",
+        address="194b Chamberlayne Rd, London NW10 3JU",
+        phone="020 3011 5523",
+        latitude=51.53777304843504,
+        longitude=-0.22248534529803407,
+    ),
 ]
