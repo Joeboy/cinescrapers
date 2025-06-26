@@ -64,4 +64,13 @@ CINEMAS = [
         latitude=51.52127054892805,
         longitude=-0.05122929131953246,
     ),
+    Cinema(
+        shortname="Rio",
+        name="The Rio",
+        url="https://riocinema.org.uk",
+        address="107 Kingsland High Street, London, E8 2PB",
+        phone="020 72241 9410",
+        latitude=51.54976663799529,
+        longitude=-0.07543067228704134,
+    ),
 ]

@@ -22,6 +22,7 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * The ICA
 * The Castle Cinema
 * The Genesis
+* The Rio
 
 ## TODO
 
@@ -31,7 +32,6 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * The Arzner
 * The Lumiere Romford
 * Cine Lumiere, South Kensington
-* The Rio (Dalston)
 * The Nickel
 * ActOne
 * Ciné Reel
