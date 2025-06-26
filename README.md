@@ -23,11 +23,11 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * The Castle Cinema
 * The Genesis
 * The Rio
+* Arthouse Crouch End
 
 ## TODO
 
 * Kiln Theatre
-* Arthouse Crouch End
 * BFI IMAX
 * The Arzner
 * The Lumiere Romford

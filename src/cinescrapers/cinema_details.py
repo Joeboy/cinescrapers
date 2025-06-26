@@ -73,4 +73,13 @@ CINEMAS = [
         latitude=51.54976663799529,
         longitude=-0.07543067228704134,
     ),
+    Cinema(
+        shortname="ArtHouse",
+        name="ArtHouse Crouch End",
+        url="https://www.arthousecrouchend.co.uk",
+        address="159A Tottenham Lane, London, N8 9BT",
+        phone="+44 020 8245 3099",
+        latitude=51.59444502418284,
+        longitude=-0.12063063244773663,
+    ),
 ]
