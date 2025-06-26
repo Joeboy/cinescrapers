@@ -82,4 +82,13 @@ CINEMAS = [
         latitude=51.59444502418284,
         longitude=-0.12063063244773663,
     ),
+    Cinema(
+        shortname="Arzner",
+        name="The Arzner",
+        url="https://thearzner.com",
+        address="10 Bermondsey Square, London, SE1 3UN",
+        phone="020 4578 1478",
+        latitude=51.497788853639946,
+        longitude=-0.08073756064057352,
+    ),
 ]

@@ -24,12 +24,12 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * The Genesis
 * The Rio
 * Arthouse Crouch End
+* The Arzner
 
 ## TODO
 
 * Kiln Theatre
 * BFI IMAX
-* The Arzner
 * The Lumiere Romford
 * Cine Lumiere, South Kensington
 * The Nickel
