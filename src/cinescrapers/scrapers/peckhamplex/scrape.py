@@ -1,10 +1,7 @@
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
 from cinescrapers.types import ShowTime
-from cinescrapers.exceptions import ScrapingError
 from playwright.sync_api import sync_playwright
-import unicodedata
 
 # ── site-specific values (replace) ─────────────────────────────────────────────
 BASE_URL = "https://www.peckhamplex.london/"
@@ -16,8 +13,9 @@ TITLE_SELECTOR = ".page-title"
 
 DATE_TIMES_SELECTOR = "time"
 
-IMAGE_SELECTOR = ".poster img"                
-DESCRIPTION_SELECTOR = 'p[itemprop=\"description\"]'
+IMAGE_SELECTOR = ".poster img"
+DESCRIPTION_SELECTOR = 'p[itemprop="description"]'
+
 
 def scrape() -> list[ShowTime]:
     with sync_playwright() as pw:
@@ -30,7 +28,7 @@ def scrape() -> list[ShowTime]:
         page.goto(url)
 
         films = page.locator(LINK_SELECTOR)
-  
+
         film_count = films.count()
         for idx in range(film_count):
             film = films.nth(idx)
@@ -41,11 +39,12 @@ def scrape() -> list[ShowTime]:
             detail_page.goto(link)
 
             title = detail_page.locator(TITLE_SELECTOR).text_content()
+            assert title
 
             print(f"Film {1 + idx} of {films.count()} ({CINEMA_NAME}) - {title}")
 
             image = detail_page.locator(IMAGE_SELECTOR).get_attribute("src") or ""
-            
+
             description = detail_page.locator(DESCRIPTION_SELECTOR).text_content() or ""
 
             times = detail_page.locator(DATE_TIMES_SELECTOR)
@@ -53,14 +52,15 @@ def scrape() -> list[ShowTime]:
             for j in range(times.count()):
                 time = times.nth(j)
                 date_time_str = time.get_attribute("datetime")
-                
+                assert date_time_str
+
                 showtimes.append(
                     ShowTime(
                         cinema_shortname=CINEMA_SHORTNAME,
                         cinema_name=CINEMA_NAME,
                         title=title,
                         link=f"{link}",
-                        datetime=datetime.fromisoformat(date_time_str).replace(tzinfo=ZoneInfo("Europe/London"))
+                        datetime=datetime.fromisoformat(date_time_str),
                         description=description,
                         image_src=f"{BASE_URL}{image}",
                     )
@@ -71,4 +71,3 @@ def scrape() -> list[ShowTime]:
         browser.close()
 
     return showtimes
-
