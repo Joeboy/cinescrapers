@@ -27,6 +27,7 @@ def scrape() -> list[ShowTime]:
         page = browser.new_page()
 
         showtimes: list[ShowTime] = []
+        seen_titles = set()
 
         url = BASE_URL
         page.goto(url)
@@ -43,6 +44,13 @@ def scrape() -> list[ShowTime]:
             detail_page.goto(link)
 
             title = detail_page.title().replace("/ The Garden Cinema", "").strip()
+
+            if title in seen_titles:
+                detail_page.close()
+                continue
+
+            seen_titles.add(title)
+
             image = detail_page.locator(IMAGE_SELECTOR).get_attribute("src") or ""
             desc_container = detail_page.locator(DESCRIPTION_SELECTOR)
             paragraphs = desc_container.locator("p")
@@ -55,7 +63,7 @@ def scrape() -> list[ShowTime]:
                 if text:
                     description_parts.append(text)
 
-            description = clean_description(" ".join(description_parts))            
+            description = clean_description(" ".join(description_parts))
             screenings = detail_page.locator(SCREENING_SELECTOR)
 
             date_str = None
@@ -65,7 +73,7 @@ def scrape() -> list[ShowTime]:
                 # Multiple screenings on the same day are in different divs,
                 # so reuse the last date if we don't find a date in this div
                 if date_loc.count() > 0:
-                  date_str = date_loc.text_content()
+                    date_str = date_loc.text_content()
 
                 if date_str is None:
                     raise ScrapingError(
@@ -92,7 +100,6 @@ def scrape() -> list[ShowTime]:
                     )
                 )
             detail_page.close()
-
 
         page.close()
         browser.close()
