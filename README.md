@@ -25,6 +25,7 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * The Rio
 * Arthouse Crouch End
 * The Arzner
+* Peckhamplex
 * The Lexi Cinema
 
 ## TODO
@@ -37,7 +38,6 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * ActOne
 * Ciné Reel
 * Electric Cinema
-* Peckhamplex
 * Throwley Yard
 * Phoenix Cinema
 * David Lean Cinema
