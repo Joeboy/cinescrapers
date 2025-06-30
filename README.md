@@ -15,46 +15,46 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 
 (sort of done, anyway, there are very probably bugs)
 
-* Prince Charles Cinema
-* Close-Up Film Centre
-* Barbican Cinemas
-* BFI Southbank
-* The ICA
-* The Castle Cinema
-* The Genesis
-* The Rio
-* Arthouse Crouch End
-* The Arzner
-* The Lexi Cinema
+- Prince Charles Cinema
+- Close-Up Film Centre
+- Barbican Cinemas
+- BFI Southbank
+- The ICA
+- The Castle Cinema
+- The Genesis
+- The Rio
+- Arthouse Crouch End
+- The Arzner
+- The Lexi Cinema
+- Garden Cinema
 
 ## TODO
 
-* Kiln Theatre
-* BFI IMAX
-* The Lumiere Romford
-* Cine Lumiere, South Kensington
-* The Nickel
-* ActOne
-* Ciné Reel
-* Electric Cinema
-* Peckhamplex
-* Throwley Yard
-* Phoenix Cinema
-* David Lean Cinema
-* Regent Street Cinema
-* Chiswick Cinema
-* Garden Cinema
-* Bertha Dochouse
-* Cinema Museum, Kenninton
-* Theatreship, Canary Wharf
-* Whirled Cinema
-* [Rich Mix](https://richmix.org.uk/whats-on/cinema)
-* Sands Films
+- Kiln Theatre
+- BFI IMAX
+- The Lumiere Romford
+- Cine Lumiere, South Kensington
+- The Nickel
+- ActOne
+- Ciné Reel
+- Electric Cinema
+- Peckhamplex
+- Throwley Yard
+- Phoenix Cinema
+- David Lean Cinema
+- Regent Street Cinema
+- Chiswick Cinema
+- Bertha Dochouse
+- Cinema Museum, Kenninton
+- Theatreship, Canary Wharf
+- Whirled Cinema
+- [Rich Mix](https://richmix.org.uk/whats-on/cinema)
+- Sands Films
 
 ## Usage
 
-* Make sure you have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed
-* `cd src/`
-* `uv run python -m cinescrapers ica`, to run the `ica` scraper, which will
+- Make sure you have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed
+- `cd src/`
+- `uv run python -m cinescrapers ica`, to run the `ica` scraper, which will
   scrape the ICA website's film listings into an sqlite file (`showtimes.db`)
-* `uv run python -m cinescrapers --list-scrapers` to see the list of scrapers.
+- `uv run python -m cinescrapers --list-scrapers` to see the list of scrapers.
