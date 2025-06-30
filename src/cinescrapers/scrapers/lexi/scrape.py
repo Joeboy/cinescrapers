@@ -11,7 +11,7 @@ URL = f"{BASE_URL}/TheLexiCinema.dll/WhatsOn"
 
 
 def scrape() -> list[ShowTime]:
-    """Thank you, The Arzner, for putting your listings in such a lovely format"""
+    """Thank you, The Lexi, for putting your listings in such a lovely format"""
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
