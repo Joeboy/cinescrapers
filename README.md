@@ -27,6 +27,7 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * The Arzner
 * Peckhamplex
 * The Lexi Cinema
+* Garden Cinema
 
 ## TODO
 
@@ -43,7 +44,6 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * David Lean Cinema
 * Regent Street Cinema
 * Chiswick Cinema
-* Garden Cinema
 * Bertha Dochouse
 * Cinema Museum, Kenninton
 * Theatreship, Canary Wharf
