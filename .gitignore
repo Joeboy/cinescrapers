@@ -12,3 +12,5 @@ wheels/
 # Node stuff
 react_app/my-app/node_modules/
 react_app/my-app/dist/
+
+showtimes.db

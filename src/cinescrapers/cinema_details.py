@@ -56,6 +56,15 @@ CINEMAS = [
         longitude=-0.0433266894724083,
     ),
     Cinema(
+        shortname="Peckhamplex",
+        name="Peckhamplex",
+        url="https://peckhamplex.london",
+        address="Peckhamplex, 95a Rye Lane, Peckham",
+        phone="0844 567 2742",
+        latitude=51.47076749886545,
+        longitude=-0.06826471346352408,
+    ),
+    Cinema(
         shortname="Genesis",
         name="The Genesis Cinema",
         url="https://www.genesiscinema.co.uk",
