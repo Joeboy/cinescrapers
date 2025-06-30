@@ -12,8 +12,9 @@ CINEMA_NAME = "The Garden Cinema"
 CINEMA_SHORTNAME = "Garden Cinema"
 
 LIST_ITEM_SELECTOR = ".films-list__by-date__film"
-
+TITLE_SELECTOR = ".films-list__by-date__film__title a"
 LINK_SELECTOR = "h1 a"
+
 IMAGE_SELECTOR = ".film-detail__image__wrapper img"                
 DESCRIPTION_SELECTOR = ".film-detail__synopsis"         
  
@@ -34,22 +35,23 @@ def scrape() -> list[ShowTime]:
 
         items = page.locator(LIST_ITEM_SELECTOR)
         for idx in range(items.count()):
-            print(f"Film {1 + idx} of {items.count()} ({CINEMA_NAME})")
 
             item = items.nth(idx)
+
+            title = item.locator(TITLE_SELECTOR).evaluate("el => el.childNodes[0].textContent.trim()")
+
+            if title in seen_titles:
+                continue
+
+            print(f"Film {1 + idx} of {items.count()} ({CINEMA_NAME}) - {title}")
+
+            seen_titles.add(title)
 
             link = item.locator(LINK_SELECTOR).get_attribute("href") or ""
 
             detail_page = browser.new_page()
             detail_page.goto(link)
 
-            title = detail_page.title().replace("/ The Garden Cinema", "").strip()
-
-            if title in seen_titles:
-                detail_page.close()
-                continue
-
-            seen_titles.add(title)
 
             image = detail_page.locator(IMAGE_SELECTOR).get_attribute("src") or ""
             desc_container = detail_page.locator(DESCRIPTION_SELECTOR)
