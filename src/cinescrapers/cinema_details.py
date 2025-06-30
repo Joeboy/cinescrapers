@@ -56,6 +56,15 @@ CINEMAS = [
         longitude=-0.0433266894724083,
     ),
     Cinema(
+        shortname="Garden Cinema",
+        name="The Garden Cinema",
+        url="https://thegardencinema.co.uk",
+        address="The Garden Cinema, 39-41 Parker Street London WC2B 5PQ",
+        phone="020 3369 5000",
+        latitude=51.51622202351887, 
+        longitude=-0.12132637116551277,
+    ),
+    Cinema(
         shortname="Genesis",
         name="The Genesis Cinema",
         url="https://www.genesiscinema.co.uk",
