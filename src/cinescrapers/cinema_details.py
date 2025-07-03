@@ -118,4 +118,13 @@ CINEMAS = [
         latitude=51.516332157119685,
         longitude=-0.12136928947451223,
     ),
+    Cinema(
+        shortname="Rich Mix",
+        name="Rich Mix",
+        url="https://richmix.org.uk/whats-on/cinema/",
+        address="35-47 Bethnal Green Road, London, E1 6LA",
+        phone="020 7613 7498",
+        latitude=51.52455234066665,
+        longitude=-0.07328263364923412,
+    ),
 ]

@@ -28,6 +28,7 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * Peckhamplex
 * The Lexi Cinema
 * Garden Cinema
+* Rich Mix
 
 ## TODO
 
@@ -48,7 +49,6 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * Cinema Museum, Kenninton
 * Theatreship, Canary Wharf
 * Whirled Cinema
-* [Rich Mix](https://richmix.org.uk/whats-on/cinema)
 * Sands Films
 
 ## Usage
