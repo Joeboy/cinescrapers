@@ -127,4 +127,13 @@ CINEMAS = [
         latitude=51.52455234066665,
         longitude=-0.07328263364923412,
     ),
+    Cinema(
+        shortname="Bertha DocHouse",
+        name="Bertha DocHouse",
+        url="https://dochouse.org",
+        address="Curzon Bloomsbury, The Brunswick, London, WC1N 1AW",
+        phone="02076129351",
+        latitude=51.52427021567371,
+        longitude=-0.12309736063900109,
+    ),
 ]

@@ -1,9 +1,7 @@
 from datetime import datetime
-import re
 
 import dateparser
 from cinescrapers.types import ShowTime
-from cinescrapers.exceptions import ScrapingError
 from playwright.sync_api import sync_playwright
 from rich import print
 
@@ -12,8 +10,6 @@ CINEMA_SHORTNAME = "Rich Mix"
 CINEMA_NAME = "Rich Mix"
 BASE_URL = "https://richmix.org.uk"
 URL = f"{BASE_URL}/whats-on/cinema/"
-
-# DATE_RE = re.compile(r".*(\d\d\.\d\d\.\d\d)$")
 
 
 def scrape() -> list[ShowTime]:
@@ -44,7 +40,7 @@ def scrape() -> list[ShowTime]:
             )
             assert title
             if title.endswith(" - Rich Mix"):
-                title = title[:-len(" - Rich Mix")]
+                title = title[: -len(" - Rich Mix")]
             description = film_page.locator(
                 'meta[property="og:description"]'
             ).get_attribute("content")

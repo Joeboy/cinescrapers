@@ -29,6 +29,7 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * The Lexi Cinema
 * Garden Cinema
 * Rich Mix
+* Bertha Dochouse
 
 ## TODO
 
@@ -45,7 +46,6 @@ See [filmhose.uk](https://filmhose.uk) for a website that uses the scraped data.
 * David Lean Cinema
 * Regent Street Cinema
 * Chiswick Cinema
-* Bertha Dochouse
 * Cinema Museum, Kenninton
 * Theatreship, Canary Wharf
 * Whirled Cinema
