@@ -176,15 +176,18 @@ def export_json() -> None:
         datetime.datetime.now().date(), datetime.time.min
     )
     this_morning_str = this_morning.isoformat(timespec="seconds")
+    three_months_time = this_morning + datetime.timedelta(days=90)
+    three_months_time_str = three_months_time.isoformat(timespec="seconds")
     conn = sqlite3.connect("showtimes.db")
     cursor = conn.cursor()
     cursor.execute(
         """
         SELECT * FROM showtimes
         WHERE datetime >= ?
+        AND datetime <= ?
         ORDER BY datetime
     """,
-        (this_morning_str,),
+        (this_morning_str, three_months_time_str),
     )
     columns = [desc[0] for desc in cursor.description]
     rows = cursor.fetchall()
