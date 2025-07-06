@@ -24,7 +24,6 @@ def scrape() -> list[ShowTime]:
         showtimes = []
         film_divs = page.locator(".item.films")
 
-        print(film_divs.count())
         for i in range(film_divs.count()):
             print(f"Film {1 + i} of {film_divs.count()} ({CINEMA_NAME})")
 
@@ -77,7 +76,7 @@ def scrape() -> list[ShowTime]:
                     description=description,
                     image_src=img_src,
                 )
-                print(showtime_data)
+                # print(showtime_data)
                 showtimes.append(showtime_data)
 
             film_page.close()

@@ -47,6 +47,11 @@ def scrape() -> list[ShowTime]:
             assert description
 
             dates_and_times_e = film_page.locator("div#dates-and-times")
+            if dates_and_times_e.count() == 0:
+                # I think it doesn't display the dates / times if the film
+                # already started
+                print(f"Skipping {link}")
+                continue
             assert dates_and_times_e.count() == 1
 
             days_e = dates_and_times_e.locator("div.day")

@@ -35,20 +35,16 @@ def scrape() -> list[ShowTime]:
                 )
 
                 fd = film_divs.nth(i)
-                # print(fd.inner_html())
                 link_e = fd.locator("a.search-listing__link")
                 link = link_e.get_attribute("href")
                 link = f"{BASE_URL}{link}"
-                # print(f"{link=}")
                 picture = fd.locator("picture img").first
                 img_src = picture.get_attribute("src")
                 img_src = f"{BASE_URL}{img_src}"
-                print(f"{img_src=}")
                 title_e = fd.locator("h2.listing-title")
                 assert title_e.count() == 1
                 title = title_e.text_content()
                 assert title is not None
-                # print(f"{title=}")
                 desc_e = fd.locator("div.search-listing__intro")
                 assert desc_e.count() == 1
                 description = desc_e.text_content()
@@ -91,7 +87,6 @@ def scrape() -> list[ShowTime]:
                         description=description,
                         image_src=img_src,
                     )
-                    print(showtime_data)
                     showtimes.append(showtime_data)
 
                 bookings_page.close()

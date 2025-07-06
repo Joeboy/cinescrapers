@@ -1,4 +1,5 @@
 import dateparser
+from playwright.sync_api import Error as PlayWrightError
 from playwright.sync_api import sync_playwright
 from rich import print
 
@@ -23,7 +24,7 @@ def scrape() -> list[ShowTime]:
         lis = listings_container.locator("ul > li > a")
 
         for i in range(lis.count()):
-            print(f"Film {1 + i} of {lis.count()}")
+            print(f"Film {1 + i} of {lis.count()} (bfi)")
             li = lis.nth(i)
             title = li.inner_text()
             href = li.get_attribute("href")
@@ -34,13 +35,20 @@ def scrape() -> list[ShowTime]:
             # print(f"{href=}", type(href))
             film_page = browser.new_page()
             film_page.goto(href)
-            articleContext = film_page.evaluate("articleContext")
+            try:
+                articleContext = film_page.evaluate("articleContext")
+            except PlayWrightError:
+                import traceback
+                traceback.print_exc()
+                print(f"Skipping {href}")
+                film_page.close()
+                continue
             try:
                 searchNames = articleContext["searchNames"]
                 searchResults = articleContext["searchResults"]
             except KeyError:
                 # This doesn't look like it has listings on it
-                print("skipping")
+                print(f"skipping {href}")
                 film_page.close()
                 continue
             listings = [

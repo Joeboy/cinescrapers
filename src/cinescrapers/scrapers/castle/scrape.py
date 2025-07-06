@@ -31,13 +31,11 @@ def scrape() -> list[ShowTime]:
             assert link is not None
             if not link.startswith("http"):
                 link = f"{BASE_URL}{link}"
-            print(f"{link=}")
 
             title_e = fd.locator("div.tile-details h1").first
             assert title_e.count() == 1
             title = title_e.text_content()
             assert title is not None
-            print(f"{title=}")
 
             img_container = fd.locator("picture img").first
             assert img_container.count() == 1
@@ -45,7 +43,6 @@ def scrape() -> list[ShowTime]:
             assert img_src is not None
             if not img_src.startswith("http"):
                 img_src = f"{BASE_URL}{img_src}"
-            print(f"{img_src=}")
 
             film_page = browser.new_page()
             film_page.goto(link)
@@ -55,7 +52,7 @@ def scrape() -> list[ShowTime]:
             description = description.text_content()
             assert description is not None
             description = description.strip()
-            print(f"{description=}")
+            # print(f"{description=}")
 
             json_scripts = film_page.locator('script[type="application/ld+json"]')
 
