@@ -40,6 +40,8 @@ def scrape() -> list[ShowTime]:
                     "content"
                 )
                 assert title
+                if title.endswith(" - Bertha DocHouse"):
+                    title = title[:-len(" - Bertha DocHouse")]
                 description = film_page.locator(
                     'meta[property="og:description"]'
                 ).get_attribute("content")

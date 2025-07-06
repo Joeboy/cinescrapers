@@ -1,3 +1,4 @@
+import html
 from datetime import datetime
 from cinescrapers.types import ShowTime
 from playwright.sync_api import sync_playwright
@@ -22,9 +23,9 @@ def scrape() -> list[ShowTime]:
         events = q["Events"]
         for event in events:
             # print(event)
-            title = event["Title"]
+            title = html.unescape(event["Title"])
             link = event["URL"]
-            description = event["Synopsis"]
+            description = html.unescape(event["Synopsis"])
             img_src = event["ImageURL"]
             performances = event["Performances"]
             for performance in performances:
