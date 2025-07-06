@@ -1,4 +1,3 @@
-import argparse
 import base64
 import datetime
 import gzip
@@ -6,11 +5,11 @@ import hashlib
 import importlib
 import json
 import sqlite3
-import sys
 import time
 from pathlib import Path
 from typing import Callable
 
+import click
 import humanize
 from rich import print
 
@@ -210,45 +209,40 @@ def export_json() -> None:
     conn.close()
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="CineScrapers CLI")
-    parser.add_argument(
-        "--export-json", action="store_true", help="Dump database to JSON"
-    )
-    parser.add_argument(
-        "--list-scrapers", action="store_true", help="List available scrapers"
-    )
-    parser.add_argument(
-        "--stats", action="store_true", help="See some stats about the db"
-    )
-    parser.add_argument("scraper", nargs="?", help="Run scraper")
+@click.group()
+def cli():
+    """CineScrapers CLI"""
+    pass
 
-    args = parser.parse_args()
-    chosen = sum(
-        bool(x)
-        for x in [args.export_json, args.list_scrapers, args.stats, args.scraper]
-    )
-    if chosen > 1:
-        parser.error(
-            "Arguments --export-json, --list-scrapers, --stats and scraper are mutually exclusive."
-        )
 
-    if args.scraper:
-        scrape_to_sqlite(args.scraper)
-    elif args.export_json:
-        export_json()
-    elif args.list_scrapers:
-        scrapers = get_scrapers()
-        print("Available scrapers:\n")
-        for scraper in scrapers:
-            print(f" - {scraper}")
-        print("\n")
-        sys.exit(1)
-    elif args.stats:
-        print_stats()
-    else:
-        parser.print_help()
+@cli.command("export-json")
+def export_json_cmd():
+    """Dump database to JSON"""
+    export_json()
+
+
+@cli.command("list-scrapers")
+def list_scrapers_cmd():
+    """List available scrapers"""
+    scrapers = get_scrapers()
+    print("Available scrapers:\n")
+    for scraper in scrapers:
+        print(f" - {scraper}")
+    print("\n")
+
+
+@cli.command("stats")
+def stats_cmd():
+    """See some stats about the db"""
+    print_stats()
+
+
+@cli.command("scrape")
+@click.argument("scraper")
+def scrape_cmd(scraper):
+    """Run scraper"""
+    scrape_to_sqlite(scraper)
 
 
 if __name__ == "__main__":
-    main()
+    cli()
