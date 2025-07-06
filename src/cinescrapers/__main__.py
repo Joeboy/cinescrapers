@@ -1,4 +1,5 @@
 import base64
+import concurrent.futures
 import datetime
 import gzip
 import hashlib
@@ -118,7 +119,9 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     scraper = get_scraper(scraper_name)
     showtimes = scraper()
     elapsed = time.perf_counter() - t
-    print(f"Scraped {len(showtimes)} showtimes in {elapsed:.2f} seconds.")
+    print(
+        f"Scraped {len(showtimes)} showtimes in {elapsed:.2f} seconds ({scraper_name})."
+    )
 
     conn = sqlite3.connect("showtimes.db")
     cursor = conn.cursor()
@@ -235,6 +238,49 @@ def list_scrapers_cmd():
 def stats_cmd():
     """See some stats about the db"""
     print_stats()
+
+
+@cli.command("refresh")
+def refresh_cmd():
+    """Refresh cinemas without recent updates"""
+    max_staleness = datetime.timedelta(days=0)
+    now = datetime.datetime.now()
+    min_datetime = now - max_staleness
+    conn = sqlite3.connect("showtimes.db")
+    cursor = conn.cursor()
+    scrapers_to_run = []
+    for scraper in get_scrapers():
+        if scraper == "rapidapi":
+            # Bad / broken / unfinished scraper
+            continue
+        cursor.execute(
+            "SELECT MAX(last_updated) FROM showtimes WHERE scraper = ?",
+            (scraper,),
+        )
+        (latest_update_str,) = cursor.fetchone()
+        if latest_update_str is None:
+            scrapers_to_run.append(scraper)
+        else:
+            latest_update = datetime.datetime.fromisoformat(latest_update_str)
+            if latest_update < min_datetime:
+                scrapers_to_run.append(scraper)
+    print(f"Running scrapers: {', '.join(scrapers_to_run)}")
+
+    failed = 0
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(scrape_to_sqlite, scraper) for scraper in scrapers_to_run
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"[red]Error running scraper: {e}[/red]")
+                import traceback
+
+                traceback.print_exc()
+                failed += 1
+    print(f"Failed: {failed}")
 
 
 @cli.command("scrape")
