@@ -246,7 +246,7 @@ def stats_cmd():
 @cli.command("refresh")
 def refresh_cmd():
     """Refresh cinemas without recent updates"""
-    max_staleness = datetime.timedelta(days=0)
+    max_staleness = datetime.timedelta(days=5)
     now = datetime.datetime.now()
     min_datetime = now - max_staleness
     conn = sqlite3.connect("showtimes.db")
