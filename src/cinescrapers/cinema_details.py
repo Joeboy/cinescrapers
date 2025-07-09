@@ -136,4 +136,13 @@ CINEMAS = [
         latitude=51.52427021567371,
         longitude=-0.12309736063900109,
     ),
+    Cinema(
+        shortname="Kiln Theatre",
+        name="The Kiln Theatre",
+        url="https://kilntheatre.com",
+        address="269 Kilburn High Road, London, UK, NW6 7JR",
+        phone="020 7328 1000",
+        latitude=51.54349322042213,
+        longitude=-0.199918972287406,
+    ),
 ]
