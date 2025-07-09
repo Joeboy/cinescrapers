@@ -60,7 +60,9 @@ def scrape() -> list[ShowTime]:
             description = desc_container.inner_text()
             img_e = film_page.locator("img.Media__image").first
             img_src = img_e.get_attribute("src")
-            img_src = f"https://whatson.bfi.org.uk{img_src}"
+            assert img_src
+            if not img_src.startswith("http"):
+                img_src = f"https://whatson.bfi.org.uk{img_src}"
 
             for listing in listings:
                 date_and_time = dateparser.parse(listing["start_date"])
