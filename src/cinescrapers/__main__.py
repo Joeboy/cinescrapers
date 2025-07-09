@@ -8,10 +8,11 @@ import json
 import sqlite3
 import time
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 import click
 import humanize
+import requests
 from rich import print
 
 from cinescrapers.cinema_details import CINEMAS
@@ -105,12 +106,15 @@ def print_stats() -> None:
     conn.close()
 
 
-def get_unique_identifier(st: ShowTime) -> str:
-    """Build a unique identifier for a showtime"""
-    s = f"{st.cinema_shortname}-{st.title}-{st.datetime}"
+def get_hashed(s: str) -> str:
     digest = hashlib.sha256(s.encode("utf-8")).digest()
     b64 = base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
     return b64[:32]  # Truncate to sensible length
+
+
+def get_unique_identifier(st: ShowTime) -> str:
+    """Build a unique identifier for a showtime"""
+    return get_hashed(f"{st.cinema_shortname}-{st.title}-{st.datetime}")
 
 
 def scrape_to_sqlite(scraper_name: str) -> None:
@@ -122,36 +126,6 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     print(
         f"Scraped {len(showtimes)} showtimes in {elapsed:.2f} seconds ({scraper_name})."
     )
-
-    conn = sqlite3.connect("showtimes.db")
-    cursor = conn.cursor()
-    # TODO: Probably ought to figure out some migration system
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS showtimes (
-            id TEXT PRIMARY KEY,
-            cinema_shortname TEXT NOT NULL,
-            cinema_name TEXT NOT NULL,
-            title TEXT NOT NULL,
-            datetime TEXT NOT NULL,
-            link TEXT NOT NULL,
-            description TEXT,
-            image_src TEXT,
-            last_updated TEXT NOT NULL,
-            scraper TEXT NOT NULL
-        )
-    """)
-    query = """
-        INSERT INTO showtimes (id, cinema_shortname, cinema_name, title, link, datetime, description, image_src, last_updated, scraper)
-        VALUES (:id, :cinema_shortname, :cinema_name, :title, :link, :datetime, :description, :image_src, :last_updated, :scraper)
-        ON CONFLICT(id) DO UPDATE SET
-            cinema_name = excluded.cinema_name,
-            link = excluded.link,
-            description = excluded.description,
-            image_src = excluded.image_src,
-            last_updated = excluded.last_updated,
-            scraper = excluded.scraper
-
-    """
 
     now = datetime.datetime.now()
     enriched_showtimes = [
@@ -165,34 +139,88 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     ]
 
     rows = [s.model_dump(mode="json") for s in enriched_showtimes]
-    cursor.executemany(query, rows)
-    conn.commit()
-    conn.close()
+    with sqlite3.connect("showtimes.db") as conn:
+        cursor = conn.cursor()
+        # TODO: Probably ought to figure out some migration system
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS showtimes (
+                id TEXT PRIMARY KEY,
+                cinema_shortname TEXT NOT NULL,
+                cinema_name TEXT NOT NULL,
+                title TEXT NOT NULL,
+                datetime TEXT NOT NULL,
+                link TEXT NOT NULL,
+                description TEXT,
+                image_src TEXT,
+                last_updated TEXT NOT NULL,
+                scraper TEXT NOT NULL
+            )
+        """)
+        query = """
+            INSERT INTO showtimes (id, cinema_shortname, cinema_name, title, link, datetime, description, image_src, last_updated, scraper)
+            VALUES (:id, :cinema_shortname, :cinema_name, :title, :link, :datetime, :description, :image_src, :last_updated, :scraper)
+            ON CONFLICT(id) DO UPDATE SET
+                cinema_name = excluded.cinema_name,
+                link = excluded.link,
+                description = excluded.description,
+                image_src = excluded.image_src,
+                last_updated = excluded.last_updated,
+                scraper = excluded.scraper
+
+        """
+        cursor.executemany(query, rows)
+
+    images_cache = Path(__file__).parent / "image_cache" / scraper_name
+    images_cache.mkdir(exist_ok=True)
+    for showtime in showtimes:
+        if showtime.image_src.startswith("data:"):
+            # Maybe we could do something with this, for now let's just skip it
+            print(f"skipping {showtime.image_src} ({scraper_name})")
+            continue
+        filename = get_hashed(showtime.image_src)
+        filepath = images_cache / filename
+        if filepath.exists():
+            continue
+        response = requests.get(showtime.image_src)
+        if not response.ok:
+            print(
+                f"Failed to fetch {showtime.image_src} ({scraper_name}) ({response.status_code})"
+            )
+            continue
+        with filepath.open("wb") as f:
+            f.write(response.content)
 
 
-def export_json() -> None:
-    """Dump the contents of the db to a json file"""
+def grab_current_showtimes() -> list[dict[str, Any]]:
     this_morning = datetime.datetime.combine(
         datetime.datetime.now().date(), datetime.time.min
     )
     this_morning_str = this_morning.isoformat(timespec="seconds")
     three_months_time = this_morning + datetime.timedelta(days=90)
     three_months_time_str = three_months_time.isoformat(timespec="seconds")
-    conn = sqlite3.connect("showtimes.db")
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        SELECT * FROM showtimes
-        WHERE datetime >= ?
-        AND datetime <= ?
-        ORDER BY datetime
-    """,
-        (this_morning_str, three_months_time_str),
-    )
-    columns = [desc[0] for desc in cursor.description]
-    rows = cursor.fetchall()
+    with sqlite3.connect("showtimes.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT * FROM showtimes
+            WHERE datetime >= ?
+            AND datetime <= ?
+            ORDER BY datetime
+        """,
+            (this_morning_str, three_months_time_str),
+        )
+        columns = [desc[0] for desc in cursor.description]
+        rows = cursor.fetchall()
 
-    data = [dict(zip(columns, row)) for row in rows]
+        data = [dict(zip(columns, row)) for row in rows]
+
+    return data
+
+
+def export_json() -> None:
+    """Dump the contents of the db to a json file"""
+
+    current_showtimes = grab_current_showtimes()
 
     dest_file = Path(__file__).parent / "cinescrapers.json"
 
@@ -201,7 +229,7 @@ def export_json() -> None:
     # Without that, for some reason cloudflare sets it as "gzip,aws-chunked",
     # which doesn't work on Chromium
     with gzip.open(dest_file, "wt", encoding="utf-8") as f:
-        json.dump(data, f)
+        json.dump(current_showtimes, f)
 
     cinemas_file = Path(__file__).parent / "cinemas.json"
     with gzip.open(cinemas_file, "wt", encoding="utf-8") as f:
@@ -210,9 +238,6 @@ def export_json() -> None:
 
     # with open(dest_file, "w") as f:
     #     json.dump(data, f)
-
-    conn.commit()
-    conn.close()
 
 
 @click.group()
