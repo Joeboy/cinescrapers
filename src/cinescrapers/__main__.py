@@ -17,6 +17,8 @@ from rich import print
 
 from cinescrapers.cinema_details import CINEMAS
 from cinescrapers.types import EnrichedShowTime, ShowTime
+from cinescrapers.utils import smart_square_thumbnail
+from PIL import Image
 
 
 def get_scrapers() -> list[str]:
@@ -173,6 +175,8 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     images_cache = Path(__file__).parent / "image_cache" / scraper_name
     images_cache.mkdir(exist_ok=True)
     for showtime in showtimes:
+        if showtime.image_src is None:
+            continue
         if showtime.image_src.startswith("data:"):
             # Maybe we could do something with this, for now let's just skip it
             print(f"skipping {showtime.image_src} ({scraper_name})")
@@ -244,6 +248,26 @@ def export_json() -> None:
 def cli():
     """CineScrapers CLI"""
     pass
+
+
+@cli.command("write-thumbnails")
+def write_thumbnails():
+    current_showtimes = grab_current_showtimes()
+    for showtime in current_showtimes:
+        cache_folder = Path(__file__).parent / "image_cache" / showtime["scraper"]
+        thumbnail_folder = Path(__file__).parent / "image_cache" / "thumbnails"
+        thumbnail_folder.mkdir(exist_ok=True)
+        img_filename = get_hashed(showtime["image_src"])
+        img_filepath = cache_folder / img_filename
+        if img_filepath.exists():
+            thumbnail_filepath = thumbnail_folder / f"{img_filepath.stem}.jpg"
+            print(f"{thumbnail_filepath=}")
+            if thumbnail_filepath.exists():
+                continue
+            smart_square_thumbnail(img_filepath, thumbnail_filepath, 150)
+        else:
+            # TODO: Write some default image if there's no input image
+            pass
 
 
 @cli.command("export-json")
