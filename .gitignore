@@ -1,3 +1,6 @@
+# Vim swapfiles
+*.sw[op]
+
 # Python-generated files
 __pycache__/
 *.py[oc]
@@ -14,3 +17,5 @@ react_app/my-app/node_modules/
 react_app/my-app/dist/
 
 showtimes.db
+yolov8n.pt
+src/cinescrapers/image_cache/
