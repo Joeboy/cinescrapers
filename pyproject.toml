@@ -9,10 +9,13 @@ dependencies = [
     "click>=8.2.1",
     "dateparser>=1.2.1",
     "humanize>=4.12.3",
+    "opencv-python-headless>=4.12.0.88",
+    "pillow>=11.3.0",
     "playwright>=1.52.0",
     "pydantic>=2.11.7",
     "requests>=2.32.4",
     "rich>=14.0.0",
+    "ultralytics>=8.3.163",
 ]
 
 [dependency-groups]
