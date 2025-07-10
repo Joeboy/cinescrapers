@@ -17,8 +17,8 @@ from rich import print
 
 from cinescrapers.cinema_details import CINEMAS
 from cinescrapers.types import EnrichedShowTime, ShowTime
+from cinescrapers.upload import get_s3_client, upload_file
 from cinescrapers.utils import smart_square_thumbnail
-
 
 IMAGES_CACHE = Path(__file__).parent / "scraped_images" / "source_images"
 IMAGES_CACHE.mkdir(parents=True, exist_ok=True)
@@ -184,7 +184,9 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     for showtime in showtimes:
         thumbnail = get_thumbnail(showtime)
         if thumbnail is None:
-            print(f"Failed to get thumbnail for {showtime.title} {showtime.image_src}, ({scraper_name})")
+            print(
+                f"Failed to get thumbnail for {showtime.title} {showtime.image_src}, ({scraper_name})"
+            )
         enriched_showtimes.append(
             EnrichedShowTime(
                 **showtime.model_dump(),
@@ -333,9 +335,31 @@ def refresh_cmd():
             except Exception as e:
                 print(f"[red]Error running scraper '{scraper}': {e}[/red]")
                 import traceback
+
                 traceback.print_exc()
                 failed.append(scraper)
     print(f"Failed: {failed}")
+
+
+@cli.command("upload")
+def upload():
+    s3_client = get_s3_client()
+    cinemas_json_path = Path(__file__).parent / "cinemas.json"
+    cinescrapers_json_path = Path(__file__).parent / "cinescrapers.json"
+    assert cinemas_json_path.exists()
+    assert cinescrapers_json_path.exists()
+    upload_file(
+        s3_client,
+        cinemas_json_path,
+        cinemas_json_path.name,
+        gz_compression=False,  # Already compressed
+    )
+    upload_file(
+        s3_client,
+        cinescrapers_json_path,
+        cinescrapers_json_path.name,
+        gz_compression=False,  # Already compressed
+    )
 
 
 @cli.command("scrape")
