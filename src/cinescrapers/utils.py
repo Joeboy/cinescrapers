@@ -1,14 +1,20 @@
 import datetime
+import functools
 from os import PathLike
 
 import cv2
 import dateparser
 import numpy as np
 from PIL import Image
-from ultralytics import YOLO
 
 
 class DateParsingError(Exception):
+    pass
+
+
+class ImageCentreNotFound(Exception):
+    "Failed to (smartly) detect the image centre point"
+
     pass
 
 
@@ -24,9 +30,45 @@ def parse_date_without_year(date_str: str) -> datetime.datetime | None:
     return date
 
 
-haar_filename = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"  # type: ignore
-face_cascade = cv2.CascadeClassifier(haar_filename)
-yolo_model = YOLO("yolov8n.pt")
+@functools.lru_cache(maxsize=1)
+def get_face_cascade():
+    haar_filename = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"  # type: ignore
+    return cv2.CascadeClassifier(haar_filename)
+
+
+@functools.lru_cache(maxsize=1)
+def get_yolo_model():
+    from ultralytics import YOLO
+
+    return YOLO("yolov8n.pt")
+
+
+def get_yolo_centre(pil_img: Image.Image) -> tuple[int, int]:
+    """Look for a good image centre to use when cropping the image to a square,
+    using YOLO model"""
+    yolo_model = get_yolo_model()
+    results = yolo_model(pil_img)
+    boxes = results[0].boxes.xyxy.cpu().numpy()
+    if len(boxes) > 0:
+        x1, y1, x2, y2 = boxes[0]
+        cx = int((x1 + x2) / 2)
+        cy = int((y1 + y2) / 2)
+        return cx, cy
+    raise ImageCentreNotFound()
+
+
+def get_facial_centre(cv_img) -> tuple[int, int]:
+    """Look for a good image centre to use when cropping the image to a square,
+    using OpenCV Face detection"""
+    face_cascade = get_face_cascade()
+    gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    if len(faces) > 0:
+        x, y, fw, fh = faces[0]
+        cx = x + fw // 2
+        cy = y + fh // 2
+        return cx, cy
+    raise ImageCentreNotFound()
 
 
 def smart_square_thumbnail(
@@ -37,32 +79,19 @@ def smart_square_thumbnail(
     cv_img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
     height, width = cv_img.shape[:2]
 
-    # --- 1. Try YOLO detection ---
     try:
-        results = yolo_model(pil_img)
-        boxes = results[0].boxes.xyxy.cpu().numpy()
-        if len(boxes) > 0:
-            x1, y1, x2, y2 = boxes[0]
-            cx = int((x1 + x2) / 2)
-            cy = int((y1 + y2) / 2)
-        else:
-            raise ValueError("No YOLO detection")
-    except Exception:
-        import traceback
-
-        traceback.print_exc()
-        # --- 2. Try OpenCV face detection ---
-        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-        if len(faces) > 0:
-            x, y, fw, fh = faces[0]
-            cx = x + fw // 2
-            cy = y + fh // 2
-        else:
-            # --- 3. Fallback to image center ---
+        cx, cy = get_yolo_centre(pil_img)
+        method = "yolo"
+    except ImageCentreNotFound:
+        try:
+            cx, cy = get_facial_centre(cv_img)
+            method = "facial"
+        except ImageCentreNotFound:
+            # Fallback to image centre
             cx, cy = width // 2, height // 2
+            method = "centre"
 
-    # --- Calculate square crop ---
+    # Calculate square crop
     crop_size = min(width, height)
     half = crop_size // 2
     left = max(0, cx - half)
@@ -74,4 +103,4 @@ def smart_square_thumbnail(
     cropped = cropped.resize((size, size), Image.LANCZOS)  # type: ignore
     cropped.save(output_path)
 
-    print(f"Saved smart thumbnail to: {output_path}")
+    print(f"Saved smart thumbnail to: {output_path} ({method})")
