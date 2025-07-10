@@ -18,7 +18,12 @@ from rich import print
 from cinescrapers.cinema_details import CINEMAS
 from cinescrapers.types import EnrichedShowTime, ShowTime
 from cinescrapers.utils import smart_square_thumbnail
-from PIL import Image
+
+
+IMAGES_CACHE = Path(__file__).parent / "scraped_images" / "source_images"
+IMAGES_CACHE.mkdir(parents=True, exist_ok=True)
+THUMBNAILS_FOLDER = Path(__file__).parent / "scraped_images" / "thumbnails"
+THUMBNAILS_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
 def get_scrapers() -> list[str]:
@@ -119,6 +124,51 @@ def get_unique_identifier(st: ShowTime) -> str:
     return get_hashed(f"{st.cinema_shortname}-{st.title}-{st.datetime}")
 
 
+def ensure_showtimes_table_exists():
+    with sqlite3.connect("showtimes.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS showtimes (
+                id TEXT PRIMARY KEY,
+                cinema_shortname TEXT NOT NULL,
+                cinema_name TEXT NOT NULL,
+                title TEXT NOT NULL,
+                datetime TEXT NOT NULL,
+                link TEXT NOT NULL,
+                description TEXT,
+                image_src TEXT,
+                thumbnail TEXT,
+                last_updated TEXT NOT NULL,
+                scraper TEXT NOT NULL
+            )
+        """)
+
+
+def get_thumbnail(showtime: ShowTime) -> str | None:
+    """Grab a copy of the showtime's image and try to thumbnail it"""
+
+    if showtime.image_src is None:
+        return None
+    if showtime.image_src.startswith("data:"):
+        # Maybe we could do something with this, for now let's just skip it
+        return None
+    filename = get_hashed(showtime.image_src)
+    filepath = IMAGES_CACHE / filename
+    if not filepath.exists():
+        response = requests.get(showtime.image_src)
+        if not response.ok:
+            print(
+                f"Failed to fetch {showtime.image_src} for {showtime.title} ({showtime.cinema_shortname}) ({response.status_code})"
+            )
+            return None
+        with filepath.open("wb") as f:
+            f.write(response.content)
+    thumbnail_filepath = THUMBNAILS_FOLDER / f"{filepath.stem}.jpg"
+    if not thumbnail_filepath.exists():
+        smart_square_thumbnail(filepath, thumbnail_filepath, 150)
+    return thumbnail_filepath.name
+
+
 def scrape_to_sqlite(scraper_name: str) -> None:
     """Run a scraper and insert the results into an sqlite db"""
     t = time.perf_counter()
@@ -130,69 +180,40 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     )
 
     now = datetime.datetime.now()
-    enriched_showtimes = [
-        EnrichedShowTime(
-            **s.model_dump(),
-            last_updated=now,
-            scraper=scraper_name,
-            id=get_unique_identifier(s),
+    enriched_showtimes = []
+    for showtime in showtimes:
+        thumbnail = get_thumbnail(showtime)
+        if thumbnail is None:
+            print(f"Failed to get thumbnail for {showtime.title} {showtime.image_src}, ({scraper_name})")
+        enriched_showtimes.append(
+            EnrichedShowTime(
+                **showtime.model_dump(),
+                last_updated=now,
+                scraper=scraper_name,
+                id=get_unique_identifier(showtime),
+                thumbnail=thumbnail,
+            )
         )
-        for s in showtimes
-    ]
 
     rows = [s.model_dump(mode="json") for s in enriched_showtimes]
+
+    ensure_showtimes_table_exists()
     with sqlite3.connect("showtimes.db") as conn:
         cursor = conn.cursor()
-        # TODO: Probably ought to figure out some migration system
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS showtimes (
-                id TEXT PRIMARY KEY,
-                cinema_shortname TEXT NOT NULL,
-                cinema_name TEXT NOT NULL,
-                title TEXT NOT NULL,
-                datetime TEXT NOT NULL,
-                link TEXT NOT NULL,
-                description TEXT,
-                image_src TEXT,
-                last_updated TEXT NOT NULL,
-                scraper TEXT NOT NULL
-            )
-        """)
         query = """
-            INSERT INTO showtimes (id, cinema_shortname, cinema_name, title, link, datetime, description, image_src, last_updated, scraper)
-            VALUES (:id, :cinema_shortname, :cinema_name, :title, :link, :datetime, :description, :image_src, :last_updated, :scraper)
+            INSERT INTO showtimes (id, cinema_shortname, cinema_name, title, link, datetime, description, image_src, thumbnail, last_updated, scraper)
+            VALUES (:id, :cinema_shortname, :cinema_name, :title, :link, :datetime, :description, :image_src, :thumbnail, :last_updated, :scraper)
             ON CONFLICT(id) DO UPDATE SET
                 cinema_name = excluded.cinema_name,
                 link = excluded.link,
                 description = excluded.description,
                 image_src = excluded.image_src,
+                thumbnail = excluded.thumbnail,
                 last_updated = excluded.last_updated,
                 scraper = excluded.scraper
 
         """
         cursor.executemany(query, rows)
-
-    images_cache = Path(__file__).parent / "image_cache" / scraper_name
-    images_cache.mkdir(exist_ok=True)
-    for showtime in showtimes:
-        if showtime.image_src is None:
-            continue
-        if showtime.image_src.startswith("data:"):
-            # Maybe we could do something with this, for now let's just skip it
-            print(f"skipping {showtime.image_src} ({scraper_name})")
-            continue
-        filename = get_hashed(showtime.image_src)
-        filepath = images_cache / filename
-        if filepath.exists():
-            continue
-        response = requests.get(showtime.image_src)
-        if not response.ok:
-            print(
-                f"Failed to fetch {showtime.image_src} ({scraper_name}) ({response.status_code})"
-            )
-            continue
-        with filepath.open("wb") as f:
-            f.write(response.content)
 
 
 def grab_current_showtimes() -> list[dict[str, Any]]:
@@ -250,26 +271,6 @@ def cli():
     pass
 
 
-@cli.command("write-thumbnails")
-def write_thumbnails():
-    current_showtimes = grab_current_showtimes()
-    for showtime in current_showtimes:
-        cache_folder = Path(__file__).parent / "image_cache" / showtime["scraper"]
-        thumbnail_folder = Path(__file__).parent / "image_cache" / "thumbnails"
-        thumbnail_folder.mkdir(exist_ok=True)
-        img_filename = get_hashed(showtime["image_src"])
-        img_filepath = cache_folder / img_filename
-        if img_filepath.exists():
-            thumbnail_filepath = thumbnail_folder / f"{img_filepath.stem}.jpg"
-            print(f"{thumbnail_filepath=}")
-            if thumbnail_filepath.exists():
-                continue
-            smart_square_thumbnail(img_filepath, thumbnail_filepath, 150)
-        else:
-            # TODO: Write some default image if there's no input image
-            pass
-
-
 @cli.command("export-json")
 def export_json_cmd():
     """Dump database to JSON"""
@@ -298,6 +299,7 @@ def refresh_cmd():
     max_staleness = datetime.timedelta(days=5)
     now = datetime.datetime.now()
     min_datetime = now - max_staleness
+    ensure_showtimes_table_exists()
     conn = sqlite3.connect("showtimes.db")
     cursor = conn.cursor()
     scrapers_to_run = []
@@ -318,20 +320,21 @@ def refresh_cmd():
                 scrapers_to_run.append(scraper)
     print(f"Running scrapers: {', '.join(scrapers_to_run)}")
 
-    failed = 0
+    failed = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [
-            executor.submit(scrape_to_sqlite, scraper) for scraper in scrapers_to_run
-        ]
-        for future in concurrent.futures.as_completed(futures):
+        future_to_scraper = {
+            executor.submit(scrape_to_sqlite, scraper): scraper
+            for scraper in scrapers_to_run
+        }
+        for future in concurrent.futures.as_completed(future_to_scraper):
+            scraper = future_to_scraper[future]
             try:
                 future.result()
             except Exception as e:
-                print(f"[red]Error running scraper: {e}[/red]")
+                print(f"[red]Error running scraper '{scraper}': {e}[/red]")
                 import traceback
-
                 traceback.print_exc()
-                failed += 1
+                failed.append(scraper)
     print(f"Failed: {failed}")
 
 
