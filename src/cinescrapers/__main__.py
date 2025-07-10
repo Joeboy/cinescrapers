@@ -361,6 +361,22 @@ def upload():
         gz_compression=False,  # Already compressed
     )
 
+    # One day, it might be better to only upload the thumbnails for
+    # "current" showtimes, and to clear out old thumbnails. But this will
+    # be OK for now I think.
+    paginator = s3_client.get_paginator("list_objects_v2")
+    existing_thumbnail_files = []
+    for page in paginator.paginate(Bucket="cinescrapers", Prefix="thumbnails/"):
+        for obj in page.get("Contents", []):
+            existing_thumbnail_files.append(obj["Key"][len("thumbnails/") :])
+
+    for path in THUMBNAILS_FOLDER.iterdir():
+        if path.name in existing_thumbnail_files:
+            print("skipping already-uploaded file")
+        else:
+            s3_key = f"thumbnails/{path.name}"
+            upload_file(s3_client, path, s3_key)
+
 
 @cli.command("scrape")
 @click.argument("scraper")
