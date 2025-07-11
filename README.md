@@ -30,6 +30,7 @@ API), please let me know!
 * Bertha Dochouse
 * Kiln Theatre
 * The Romford Lumiere
+* Regent Street Cinema
 
 ## TODO
 
@@ -42,7 +43,6 @@ API), please let me know!
 * Throwley Yard
 * Phoenix Cinema
 * David Lean Cinema
-* Regent Street Cinema
 * Chiswick Cinema
 * Cinema Museum, Kenninton
 * Theatreship, Canary Wharf

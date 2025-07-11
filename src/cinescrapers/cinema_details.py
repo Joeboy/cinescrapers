@@ -154,4 +154,13 @@ CINEMAS = [
         latitude=51.57958814938073,
         longitude=0.185693683539507,
     ),
+    Cinema(
+        shortname="Regent Street",
+        name="Regent Street Cinema",
+        url="https://www.regentstreetcinema.com",
+        address="307 Regent Street, London, W1B 2HW",
+        phone="020 7911 5050",
+        latitude=51.5169546084828,
+        longitude=-0.14282968762920947,
+    ),
 ]

@@ -18,7 +18,7 @@ class ImageCentreNotFound(Exception):
     pass
 
 
-def parse_date_without_year(date_str: str) -> datetime.datetime | None:
+def parse_date_without_year(date_str: str) -> datetime.datetime:
     """If eg. date_str eg. "February 12th" and it's now October, assume the
     date is next year"""
     now = datetime.datetime.now()
