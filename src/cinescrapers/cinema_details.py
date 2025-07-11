@@ -145,4 +145,13 @@ CINEMAS = [
         latitude=51.54349322042213,
         longitude=-0.199918972287406,
     ),
+    Cinema(
+        shortname="Lumiere Romford",
+        name="Lumiere Romford",
+        url="https://www.lumiereromford.com",
+        address="Lumiere Romford, Level 3, The Mercury Shopping Centre, Mercury Gardens, Romford, RM1 3EE",
+        phone="0330 441 4580",
+        latitude=51.57958814938073,
+        longitude=0.185693683539507,
+    ),
 ]

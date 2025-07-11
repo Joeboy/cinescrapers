@@ -29,11 +29,11 @@ API), please let me know!
 * Rich Mix
 * Bertha Dochouse
 * Kiln Theatre
+* The Romford Lumiere
 
 ## TODO
 
 * BFI IMAX
-* The Lumiere Romford
 * Cine Lumiere, South Kensington
 * The Nickel
 * ActOne
