@@ -6,6 +6,7 @@ from rich import print
 from cinescrapers.exceptions import ScrapingError
 from cinescrapers.types import ShowTime
 
+CINEMA_SHORTCODE = "BF"
 INDEX_URL = "https://whatson.bfi.org.uk/Online/article/filmsindex"
 
 
@@ -39,6 +40,7 @@ def scrape() -> list[ShowTime]:
                 articleContext = film_page.evaluate("articleContext")
             except PlayWrightError:
                 import traceback
+
                 traceback.print_exc()
                 print(f"Skipping {href}")
                 film_page.close()
@@ -69,14 +71,8 @@ def scrape() -> list[ShowTime]:
                 if date_and_time is None:
                     raise ScrapingError("Could not parse date and time")
 
-                if "southbank" in listing["venue_name"].lower():
-                    cinema_name = "BFI Southbank"
-                else:
-                    cinema_name = "BFI"
-
                 showtime = ShowTime(
-                    cinema_shortname="BFI",
-                    cinema_name=cinema_name,
+                    cinema_shortcode=CINEMA_SHORTCODE,
                     title=title,
                     link=href,
                     datetime=date_and_time,

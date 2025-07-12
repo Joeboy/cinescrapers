@@ -5,6 +5,7 @@ from rich import print
 
 
 CINEMA_SHORTNAME = "Bertha DocHouse"
+CINEMA_SHORTCODE = "BR"
 CINEMA_NAME = "Bertha DocHouse"
 BASE_URL = "https://dochouse.org"
 
@@ -41,7 +42,7 @@ def scrape() -> list[ShowTime]:
                 )
                 assert title
                 if title.endswith(" - Bertha DocHouse"):
-                    title = title[:-len(" - Bertha DocHouse")]
+                    title = title[: -len(" - Bertha DocHouse")]
                 description = film_page.locator(
                     'meta[property="og:description"]'
                 ).get_attribute("content")
@@ -66,8 +67,7 @@ def scrape() -> list[ShowTime]:
                     date_time = dateparser.parse(date_time_str)
                     assert date_time
                     showtime_data = ShowTime(
-                        cinema_shortname=CINEMA_SHORTNAME,
-                        cinema_name=CINEMA_NAME,
+                        cinema_shortcode=CINEMA_SHORTCODE,
                         title=title,
                         link=link,
                         datetime=date_time,

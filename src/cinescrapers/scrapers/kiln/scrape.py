@@ -5,8 +5,7 @@ from cinescrapers.types import ShowTime
 from cinescrapers.utils import parse_date_without_year
 from rich import print
 
-CINEMA_NAME = "The Kiln Theatre"
-CINEMA_SHORTNAME = "Kiln Theatre"
+CINEMA_SHORTCODE = "KN"
 BASE_URL = "https://kilntheatre.com"
 LISTINGS_URL = f"{BASE_URL}/cinema-listings/"
 
@@ -24,7 +23,7 @@ def scrape() -> list[ShowTime]:
         # can, then later we'll associate it with the listings info
         film_divs = page.locator("div.c-film-listing > a")
         film_data = {}
-        print(f"Pre-fetching film data ({CINEMA_NAME})")
+        print(f"Pre-fetching film data ({CINEMA_SHORTCODE})")
         for i in range(film_divs.count()):
             fd = film_divs.nth(i)
             title_e = fd.locator(":scope > h5.c-film-listing__title")
@@ -53,7 +52,9 @@ def scrape() -> list[ShowTime]:
             booking_singles = page.locator("div.c-booking-single")
             showtimes_for_page = []
             for i in range(booking_singles.count()):
-                print(f"Page {page_no}, date {1 + i} of {film_divs.count()} ({CINEMA_NAME})")
+                print(
+                    f"Page {page_no}, date {1 + i} of {film_divs.count()} ({CINEMA_SHORTCODE})"
+                )
                 date_div = booking_singles.nth(i)
                 date_e = date_div.locator("div.c-film-booking__date")
                 assert date_e.count() == 1
@@ -77,8 +78,7 @@ def scrape() -> list[ShowTime]:
                     # Let's worry about that if / when it happens
                     showtime_data = film_data[title]
                     showtime_data |= {
-                        "cinema_name": CINEMA_NAME,
-                        "cinema_shortname": CINEMA_SHORTNAME,
+                        "cinema_shortcode": CINEMA_SHORTCODE,
                         "datetime": date_time,
                     }
                     showtime = ShowTime(**showtime_data)

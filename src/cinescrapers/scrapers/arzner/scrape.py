@@ -5,8 +5,7 @@ from playwright.sync_api import sync_playwright
 from rich import print
 
 
-CINEMA_SHORTNAME = "Arzner"
-CINEMA_NAME = "The Arzner"
+CINEMA_SHORTCODE = "AZ"
 BASE_URL = "https://thearzner.com"
 URL = f"{BASE_URL}/TheArzner.dll/WhatsOn"
 
@@ -35,8 +34,7 @@ def scrape() -> list[ShowTime]:
                 date_time = datetime.strptime(date_and_time_str, "%Y-%m-%d %H%M")
 
                 showtime_data = ShowTime(
-                    cinema_shortname=CINEMA_SHORTNAME,
-                    cinema_name=CINEMA_NAME,
+                    cinema_shortcode=CINEMA_SHORTCODE,
                     title=title,
                     link=link,
                     datetime=date_time,

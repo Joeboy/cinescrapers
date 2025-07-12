@@ -7,6 +7,7 @@ from rich import print
 
 CINEMA_SHORTNAME = "Lexi"
 CINEMA_NAME = "The Lexi"
+CINEMA_SHORTCODE="LX"
 BASE_URL = "https://thelexicinema.co.uk"
 URL = f"{BASE_URL}/TheLexiCinema.dll/WhatsOn"
 
@@ -35,8 +36,7 @@ def scrape() -> list[ShowTime]:
                 date_time = datetime.strptime(date_and_time_str, "%Y-%m-%d %H%M")
 
                 showtime_data = ShowTime(
-                    cinema_shortname=CINEMA_SHORTNAME,
-                    cinema_name=CINEMA_NAME,
+                    cinema_shortcode=CINEMA_SHORTCODE,
                     title=title,
                     link=link,
                     datetime=date_time,

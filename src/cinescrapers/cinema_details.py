@@ -182,3 +182,6 @@ CINEMAS = [
         longitude=-0.14282968762920947,
     ),
 ]
+
+
+CINEMAS_BY_SHORTCODE = {c.shortcode: c for c in CINEMAS}

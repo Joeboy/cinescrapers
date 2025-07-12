@@ -8,6 +8,7 @@ from rich import print
 
 
 CINEMA_SHORTNAME = "Genesis"
+CINEMA_SHORTCODE="GS"
 CINEMA_NAME = "The Genesis Cinema"
 BASE_URL = "https://www.genesiscinema.co.uk"
 URL = f"{BASE_URL}/whatson/all"
@@ -76,8 +77,7 @@ def scrape() -> list[ShowTime]:
                             raise ScrapingError("Failed to interpret date / time")
 
                         showtime_data = ShowTime(
-                            cinema_shortname=CINEMA_SHORTNAME,
-                            cinema_name=CINEMA_NAME,
+                            cinema_shortcode=CINEMA_SHORTCODE,
                             title=title,
                             link=link,
                             datetime=date_time,

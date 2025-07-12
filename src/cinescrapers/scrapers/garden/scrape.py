@@ -8,6 +8,7 @@ from rich import print
 
 CINEMA_SHORTNAME = "Garden Cinema"
 CINEMA_NAME = "The Garden Cinema"
+CINEMA_SHORTCODE = "GD"
 BASE_URL = "https://www.thegardencinema.co.uk"
 URL = f"{BASE_URL}"
 
@@ -47,16 +48,14 @@ def scrape() -> list[ShowTime]:
             screenings_es = screenings_e.locator(".screening-panel")
             for j in range(screenings_es.count()):
                 screening_es = screenings_es.nth(j)
-                date_e = screening_es.locator(
-                    ".screening-panel__date-title"
-                )
+                date_e = screening_es.locator(".screening-panel__date-title")
                 if date_e.count() == 1:
                     date_str = date_e.first.text_content()
                 elif date_e.count() == 0:
                     # Just use the last date_str
                     pass
 
-                #.first.text_content()
+                # .first.text_content()
                 assert date_str
                 time_str = screening_es.locator(
                     ".screening-time a.screening"
@@ -68,8 +67,7 @@ def scrape() -> list[ShowTime]:
                 date_time = datetime.datetime.combine(date, time)
 
                 showtime_data = ShowTime(
-                    cinema_shortname=CINEMA_SHORTNAME,
-                    cinema_name=CINEMA_NAME,
+                    cinema_shortcode=CINEMA_SHORTCODE,
                     title=title,
                     link=link,
                     datetime=date_time,

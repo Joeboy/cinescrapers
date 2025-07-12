@@ -9,6 +9,7 @@ from rich import print
 
 CINEMA_NAME = "Institute of Contemporary Arts"
 CINEMA_SHORTNAME = "ICA"
+CINEMA_SHORTCODE = "IC"
 BASE_URL = "https://www.ica.art"
 INDEX_URL = f"{BASE_URL}/films"
 
@@ -68,8 +69,7 @@ def scrape() -> list[ShowTime]:
                     raise ScrapingError(f"Failed to parse date_time at {link}")
 
                 showtime_data = ShowTime(
-                    cinema_shortname=CINEMA_SHORTNAME,
-                    cinema_name=CINEMA_NAME,
+                    cinema_shortcode=CINEMA_SHORTCODE,
                     title=title,
                     link=link,
                     datetime=date_time,

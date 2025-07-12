@@ -7,6 +7,7 @@ from playwright.sync_api import sync_playwright
 BASE_URL = "https://www.peckhamplex.london/"
 CINEMA_NAME = "Peckhamplex"
 CINEMA_SHORTNAME = "Peckhamplex"
+CINEMA_SHORTCODE = "PP"
 
 LINK_SELECTOR = ".book-now a"
 TITLE_SELECTOR = ".page-title"
@@ -56,8 +57,7 @@ def scrape() -> list[ShowTime]:
 
                 showtimes.append(
                     ShowTime(
-                        cinema_shortname=CINEMA_SHORTNAME,
-                        cinema_name=CINEMA_NAME,
+                        cinema_shortcode=CINEMA_SHORTCODE,
                         title=title,
                         link=f"{link}",
                         datetime=datetime.fromisoformat(date_time_str),

@@ -5,9 +5,9 @@ from pydantic import BaseModel
 
 
 class Cinema(BaseModel):
+    shortcode: str
     shortname: str
     name: str
-    shortcode: str
     url: str
     address: str | None
     phone: str | None
@@ -16,8 +16,7 @@ class Cinema(BaseModel):
 
 
 class ShowTime(BaseModel):
-    cinema_shortname: str
-    cinema_name: str
+    cinema_shortcode: str
     title: str
     link: str
     datetime: datetime.datetime

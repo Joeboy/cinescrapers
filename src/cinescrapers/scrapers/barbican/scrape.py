@@ -6,8 +6,7 @@ from playwright.sync_api import sync_playwright
 from rich import print
 
 
-CINEMA_NAME = "Barbican"
-CINAME_SHORTNAME = "Barbican"
+CINAME_SHORTCODE = "BB"
 BASE_URL = "https://www.barbican.org.uk"
 
 
@@ -31,7 +30,7 @@ def scrape() -> list[ShowTime]:
             film_divs = page.locator("article.listing--event")
             for i in range(film_divs.count()):
                 print(
-                    f"Page {1 + page_no}, Film {1 + i} of {film_divs.count()} ({CINEMA_NAME})"
+                    f"Page {1 + page_no}, Film {1 + i} of {film_divs.count()} ({CINAME_SHORTCODE})"
                 )
 
                 fd = film_divs.nth(i)
@@ -79,8 +78,7 @@ def scrape() -> list[ShowTime]:
 
                     # print(f"{date_and_time=}")
                     showtime_data = ShowTime(
-                        cinema_shortname=CINAME_SHORTNAME,
-                        cinema_name=CINEMA_NAME,
+                        cinema_shortcode=CINAME_SHORTCODE,
                         title=title,
                         link=link,
                         datetime=date_and_time,

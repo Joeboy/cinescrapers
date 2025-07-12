@@ -62,11 +62,11 @@ def print_stats() -> None:
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM showtimes")
     count = cursor.fetchone()[0]
-    cursor.execute("SELECT DISTINCT cinema_shortname FROM showtimes")
-    cinema_shortnames = [c for (c,) in cursor.fetchall()]
+    cursor.execute("SELECT DISTINCT cinema_shortcode FROM showtimes")
+    cinema_shortcodes = [c for (c,) in cursor.fetchall()]
 
     print(f"Total showtimes: {count}")
-    print(f"Distinct cinemas: {len(cinema_shortnames)}")
+    print(f"Distinct cinemas: {len(cinema_shortcodes)}")
     print()
 
     for scraper in get_scrapers():
@@ -92,18 +92,18 @@ def print_stats() -> None:
     print("-" * len("CINEMA DETAILS"))
     print()
 
-    with_details = set(cinema_shortnames) & set(c.shortname for c in CINEMAS)
-    missing_details = set(cinema_shortnames) - set(c.shortname for c in CINEMAS)
+    with_details = set(cinema_shortcodes) & set(c.shortcode for c in CINEMAS)
+    missing_details = set(cinema_shortcodes) - set(c.shortcode for c in CINEMAS)
 
     print("Cinemas with details:")
-    for shortname in sorted(with_details):
-        print(f" - {shortname}")
+    for shortcode in sorted(with_details):
+        print(f" - {shortcode}")
     print()
 
     if missing_details:
         print("Cinemas with no details:")
-        for shortname in missing_details:
-            print(f" - {shortname}")
+        for shortcode in missing_details:
+            print(f" - {shortcode}")
         print()
     else:
         print("No cinemas are missing details.")
@@ -120,7 +120,7 @@ def get_hashed(s: str) -> str:
 
 def get_unique_identifier(st: ShowTime) -> str:
     """Build a unique identifier for a showtime"""
-    return get_hashed(f"{st.cinema_shortname}-{st.title}-{st.datetime}")
+    return get_hashed(f"{st.cinema_shortcode}-{st.title}-{st.datetime}")
 
 
 def ensure_showtimes_table_exists():
@@ -129,8 +129,7 @@ def ensure_showtimes_table_exists():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS showtimes (
                 id TEXT PRIMARY KEY,
-                cinema_shortname TEXT NOT NULL,
-                cinema_name TEXT NOT NULL,
+                cinema_shortcode TEXT NOT NULL,
                 title TEXT NOT NULL,
                 datetime TEXT NOT NULL,
                 link TEXT NOT NULL,
@@ -157,7 +156,7 @@ def get_thumbnail(showtime: ShowTime) -> str | None:
         response = requests.get(showtime.image_src)
         if not response.ok:
             print(
-                f"Failed to fetch {showtime.image_src} for {showtime.title} ({showtime.cinema_shortname}) ({response.status_code})"
+                f"Failed to fetch {showtime.image_src} for {showtime.title} ({showtime.cinema_shortcode}) ({response.status_code})"
             )
             return None
         with filepath.open("wb") as f:
@@ -203,10 +202,9 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     with sqlite3.connect("showtimes.db") as conn:
         cursor = conn.cursor()
         query = """
-            INSERT INTO showtimes (id, cinema_shortname, cinema_name, title, link, datetime, description, image_src, thumbnail, last_updated, scraper)
-            VALUES (:id, :cinema_shortname, :cinema_name, :title, :link, :datetime, :description, :image_src, :thumbnail, :last_updated, :scraper)
+            INSERT INTO showtimes (id, cinema_shortcode, title, link, datetime, description, image_src, thumbnail, last_updated, scraper)
+            VALUES (:id, :cinema_shortcode, :title, :link, :datetime, :description, :image_src, :thumbnail, :last_updated, :scraper)
             ON CONFLICT(id) DO UPDATE SET
-                cinema_name = excluded.cinema_name,
                 link = excluded.link,
                 description = excluded.description,
                 image_src = excluded.image_src,
@@ -248,12 +246,17 @@ def export_json() -> None:
     """Dump the contents of the db to a json file"""
 
     current_showtimes = grab_current_showtimes()
+
+    cinema_shortcodes = [c.shortcode for c in CINEMAS]
+    # Check cinema shortcodes are unique:
+    assert len(set(cinema_shortcodes)) == len(CINEMAS)
+    # Check each showtime has a valid cinema shortcode:
+    for s in current_showtimes:
+        assert s["cinema_shortcode"] in cinema_shortcodes
+
     showtimes_file = Path(__file__).parent / "cinescrapers.json"
     with showtimes_file.open("w") as f:
         json.dump(current_showtimes, f)
-
-    # Check cinema shortcodes are unique:
-    assert len(set(c.shortcode for c in CINEMAS)) == len(CINEMAS)
 
     cinemas_data = [c.model_dump() for c in CINEMAS]
     cinemas_file = Path(__file__).parent / "cinemas.json"

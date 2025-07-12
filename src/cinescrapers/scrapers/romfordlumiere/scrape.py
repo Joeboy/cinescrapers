@@ -8,6 +8,7 @@ from cinescrapers.types import ShowTime
 
 CINEMA_SHORTNAME = "Lumiere Romford"
 CINEMA_NAME = "Lumiere Romford"
+CINEMA_SHORTCODE = "LR"
 BASE_URL = "https://www.lumiereromford.com"
 URL = f"{BASE_URL}"
 
@@ -66,7 +67,7 @@ def scrape() -> list[ShowTime]:
             buy_tickets_page = browser.new_page()
             buy_tickets_page.goto(buy_tickets_url)
             buy_tickets_page.wait_for_load_state("networkidle")
-            # buy_tickets_page.wait_for_timeout(1000)
+            buy_tickets_page.wait_for_timeout(300)
 
             day_cards = buy_tickets_page.locator("a.day_card")
             assert day_cards.count() > 0
@@ -92,8 +93,7 @@ def scrape() -> list[ShowTime]:
                     assert t
                     date_time = datetime.datetime.combine(date.date(), t.time())
                     showtime_data = ShowTime(
-                        cinema_shortname=CINEMA_SHORTNAME,
-                        cinema_name=CINEMA_NAME,
+                        cinema_shortcode=CINEMA_SHORTCODE,
                         title=title,
                         link=link,
                         datetime=date_time,

@@ -7,6 +7,7 @@ from cinescrapers.utils import parse_date_without_year
 
 CINEMA_SHORTNAME = "Regent Street"
 CINEMA_NAME = "Regent Street Cinema"
+CINEMA_SHORTCODE="RG"
 BASE_URL = "https://www.regentstreetcinema.com"
 URL = f"{BASE_URL}/now-playing"
 
@@ -57,8 +58,7 @@ def scrape() -> list[ShowTime]:
                 date_time = parse_date_without_year(date_time_str)
 
                 showtime_data = ShowTime(
-                    cinema_shortname=CINEMA_SHORTNAME,
-                    cinema_name=CINEMA_NAME,
+                    cinema_shortcode=CINEMA_SHORTCODE,
                     title=title,
                     link=link,
                     datetime=date_time,

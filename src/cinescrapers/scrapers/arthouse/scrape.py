@@ -8,6 +8,7 @@ from rich import print
 
 CINEMA_SHORTNAME = "ArtHouse"
 CINEMA_NAME = "ArtHouse Crouch End"
+CINEMA_SHORTCODE = "AH"
 BASE_URL = "https://www.arthousecrouchend.co.uk"
 URL = f"{BASE_URL}/booking-now/"
 
@@ -77,8 +78,7 @@ def scrape() -> list[ShowTime]:
                     combined_dt = datetime.datetime.combine(date.date(), time)
 
                     showtime_data = ShowTime(
-                        cinema_shortname=CINEMA_SHORTNAME,
-                        cinema_name=CINEMA_NAME,
+                        cinema_shortcode=CINEMA_SHORTCODE,
                         title=title,
                         link=link,
                         datetime=combined_dt,
