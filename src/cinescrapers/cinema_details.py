@@ -4,6 +4,7 @@ CINEMAS = [
     Cinema(
         shortname="ICA",
         name="Instutute of Contemporary Arts",
+        shortcode="IC",
         url="https://www.ica.art",
         address="The Mall, London SW1Y 5AH",
         phone="+44 20 7930 3647",
@@ -13,6 +14,7 @@ CINEMAS = [
     Cinema(
         shortname="PCC",
         name="Prince Charles Cinema",
+        shortcode="PC",
         url="https://princecharlescinema.com",
         address="7 Leicester Place, London WC2H 7BY",
         phone="+44 20 7494 3654",
@@ -22,6 +24,7 @@ CINEMAS = [
     Cinema(
         shortname="Close-Up",
         name="Close-Up Film Centre",
+        shortcode="CU",
         url="https://www.closeupfilmcentre.com",
         address="97 Sclater Street, London E1 6HR",
         phone="+44 20 3784 7970",
@@ -31,6 +34,7 @@ CINEMAS = [
     Cinema(
         shortname="BFI",
         name="British Film Institute",
+        shortcode="BF",
         url="https://www.bfi.org.uk",
         address="Belvedere Road, London SE1 8XT",
         phone="+44 20 7928 3232",
@@ -40,6 +44,7 @@ CINEMAS = [
     Cinema(
         shortname="Barbican",
         name="Barbican Cinemas",
+        shortcode="BB",
         url="https://www.barbican.org.uk",
         address="Beech St, Barbican, London EC1Y 8AA",
         phone="02078702500",
@@ -49,6 +54,7 @@ CINEMAS = [
     Cinema(
         shortname="Castle",
         name="Castle Cinema",
+        shortcode="CS",
         url="https://thecastlecinema.com",
         address="The Castle Cinema, First floor, 64 - 66 Brooksby's Walk, London, E9 6DA",
         phone=None,
@@ -58,6 +64,7 @@ CINEMAS = [
     Cinema(
         shortname="Peckhamplex",
         name="Peckhamplex",
+        shortcode="PP",
         url="https://peckhamplex.london",
         address="Peckhamplex, 95a Rye Lane, Peckham",
         phone="0844 567 2742",
@@ -67,6 +74,7 @@ CINEMAS = [
     Cinema(
         shortname="Genesis",
         name="The Genesis Cinema",
+        shortcode="GS",
         url="https://www.genesiscinema.co.uk",
         address="93-95 Mile End Road, Whitechapel, London E1 4UJ",
         phone="02077802000",
@@ -76,6 +84,7 @@ CINEMAS = [
     Cinema(
         shortname="Rio",
         name="The Rio",
+        shortcode="RI",
         url="https://riocinema.org.uk",
         address="107 Kingsland High Street, London, E8 2PB",
         phone="020 72241 9410",
@@ -85,6 +94,7 @@ CINEMAS = [
     Cinema(
         shortname="ArtHouse",
         name="ArtHouse Crouch End",
+        shortcode="AH",
         url="https://www.arthousecrouchend.co.uk",
         address="159A Tottenham Lane, London, N8 9BT",
         phone="+44 020 8245 3099",
@@ -94,6 +104,7 @@ CINEMAS = [
     Cinema(
         shortname="Arzner",
         name="The Arzner",
+        shortcode="AZ",
         url="https://thearzner.com",
         address="10 Bermondsey Square, London, SE1 3UN",
         phone="020 4578 1478",
@@ -103,6 +114,7 @@ CINEMAS = [
     Cinema(
         shortname="Lexi",
         name="The Lexi Cinema",
+        shortcode="LX",
         url="https://thelexicinema.co.uk",
         address="194b Chamberlayne Rd, London NW10 3JU",
         phone="020 3011 5523",
@@ -112,6 +124,7 @@ CINEMAS = [
     Cinema(
         shortname="Garden Cinema",
         name="The Garden Cinema",
+        shortcode="GD",
         url="https://www.thegardencinema.co.uk",
         address="39-41 Parker Street London WC2B 5PQ",
         phone="Tel: 020 3369 5000",
@@ -121,6 +134,7 @@ CINEMAS = [
     Cinema(
         shortname="Rich Mix",
         name="Rich Mix",
+        shortcode="RM",
         url="https://richmix.org.uk/whats-on/cinema/",
         address="35-47 Bethnal Green Road, London, E1 6LA",
         phone="020 7613 7498",
@@ -130,6 +144,7 @@ CINEMAS = [
     Cinema(
         shortname="Bertha DocHouse",
         name="Bertha DocHouse",
+        shortcode="BR",
         url="https://dochouse.org",
         address="Curzon Bloomsbury, The Brunswick, London, WC1N 1AW",
         phone="02076129351",
@@ -139,6 +154,7 @@ CINEMAS = [
     Cinema(
         shortname="Kiln Theatre",
         name="The Kiln Theatre",
+        shortcode="KN",
         url="https://kilntheatre.com",
         address="269 Kilburn High Road, London, UK, NW6 7JR",
         phone="020 7328 1000",
@@ -148,6 +164,7 @@ CINEMAS = [
     Cinema(
         shortname="Lumiere Romford",
         name="Lumiere Romford",
+        shortcode="LR",
         url="https://www.lumiereromford.com",
         address="Lumiere Romford, Level 3, The Mercury Shopping Centre, Mercury Gardens, Romford, RM1 3EE",
         phone="0330 441 4580",
@@ -157,6 +174,7 @@ CINEMAS = [
     Cinema(
         shortname="Regent Street",
         name="Regent Street Cinema",
+        shortcode="RG",
         url="https://www.regentstreetcinema.com",
         address="307 Regent Street, London, W1B 2HW",
         phone="020 7911 5050",

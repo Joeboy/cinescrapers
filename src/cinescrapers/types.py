@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class Cinema(BaseModel):
     shortname: str
     name: str
+    shortcode: str
     url: str
     address: str | None
     phone: str | None
