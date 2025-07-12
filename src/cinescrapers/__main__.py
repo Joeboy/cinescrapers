@@ -186,6 +186,7 @@ def scrape_to_sqlite(scraper_name: str) -> None:
             print(
                 f"Failed to get thumbnail for {showtime.title} {showtime.image_src}, ({scraper_name})"
             )
+        showtime.description = showtime.description[:210]
         enriched_showtimes.append(
             EnrichedShowTime(
                 **showtime.model_dump(),
