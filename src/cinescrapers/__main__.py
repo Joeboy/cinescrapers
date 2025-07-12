@@ -1,7 +1,6 @@
 import base64
 import concurrent.futures
 import datetime
-import gzip
 import hashlib
 import importlib
 import json
@@ -248,23 +247,17 @@ def export_json() -> None:
     """Dump the contents of the db to a json file"""
 
     current_showtimes = grab_current_showtimes()
-
-    dest_file = Path(__file__).parent / "cinescrapers.json"
-
-    # In order for the gzip file to work on Chromium I had to set up
-    # a cloudflare rule to write the content-encoding: gzip header.
-    # Without that, for some reason cloudflare sets it as "gzip,aws-chunked",
-    # which doesn't work on Chromium
-    with gzip.open(dest_file, "wt", encoding="utf-8") as f:
+    showtimes_file = Path(__file__).parent / "cinescrapers.json"
+    with showtimes_file.open("w") as f:
         json.dump(current_showtimes, f)
 
-    cinemas_file = Path(__file__).parent / "cinemas.json"
-    with gzip.open(cinemas_file, "wt", encoding="utf-8") as f:
-        cinemas_data = [c.model_dump() for c in CINEMAS]
-        json.dump(cinemas_data, f)
+    # Check cinema shortcodes are unique:
+    assert len(set(c.shortcode for c in CINEMAS)) == len(CINEMAS)
 
-    # with open(dest_file, "w") as f:
-    #     json.dump(data, f)
+    cinemas_data = [c.model_dump() for c in CINEMAS]
+    cinemas_file = Path(__file__).parent / "cinemas.json"
+    with cinemas_file.open("w") as f:
+        json.dump(cinemas_data, f)
 
 
 @click.group()
@@ -343,6 +336,10 @@ def refresh_cmd():
 
 @cli.command("upload")
 def upload():
+    # NOTE: These files are gzipped by default before uploading. To make that work,
+    # on Chromium, I had to create a cloudflare rule to add the
+    # "content-encoding: gzip" header.
+
     s3_client = get_s3_client()
     cinemas_json_path = Path(__file__).parent / "cinemas.json"
     cinescrapers_json_path = Path(__file__).parent / "cinescrapers.json"
@@ -352,13 +349,11 @@ def upload():
         s3_client,
         cinemas_json_path,
         cinemas_json_path.name,
-        gz_compression=False,  # Already compressed
     )
     upload_file(
         s3_client,
         cinescrapers_json_path,
         cinescrapers_json_path.name,
-        gz_compression=False,  # Already compressed
     )
 
     # One day, it might be better to only upload the thumbnails for
