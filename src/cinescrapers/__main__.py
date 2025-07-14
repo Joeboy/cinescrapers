@@ -296,6 +296,18 @@ def stats_cmd():
     print_stats()
 
 
+@cli.command("list-films")
+def list_films_cmd():
+    """List all films in the database"""
+    with sqlite3.connect("showtimes.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT title FROM showtimes ORDER BY title")
+        results = cursor.fetchall()
+    titles = sorted(set(normalize_title(title) for (title,) in results))
+    for title in titles:
+        print(title)
+
+
 @cli.command("refresh")
 def refresh_cmd():
     """Refresh cinemas without recent updates"""
