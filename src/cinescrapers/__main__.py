@@ -15,6 +15,7 @@ import requests
 from rich import print
 
 from cinescrapers.cinema_details import CINEMAS
+from cinescrapers.title_normalization import normalize_title
 from cinescrapers.types import EnrichedShowTime, ShowTime
 from cinescrapers.upload import get_s3_client, upload_file
 from cinescrapers.utils import smart_square_thumbnail
@@ -131,6 +132,7 @@ def ensure_showtimes_table_exists():
                 id TEXT PRIMARY KEY,
                 cinema_shortcode TEXT NOT NULL,
                 title TEXT NOT NULL,
+                norm_title TEXT,
                 datetime TEXT NOT NULL,
                 link TEXT NOT NULL,
                 description TEXT,
@@ -189,6 +191,7 @@ def scrape_to_sqlite(scraper_name: str) -> None:
         enriched_showtimes.append(
             EnrichedShowTime(
                 **showtime.model_dump(),
+                norm_title=normalize_title(showtime.title),
                 last_updated=now,
                 scraper=scraper_name,
                 id=get_unique_identifier(showtime),
@@ -202,10 +205,11 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     with sqlite3.connect("showtimes.db") as conn:
         cursor = conn.cursor()
         query = """
-            INSERT INTO showtimes (id, cinema_shortcode, title, link, datetime, description, image_src, thumbnail, last_updated, scraper)
-            VALUES (:id, :cinema_shortcode, :title, :link, :datetime, :description, :image_src, :thumbnail, :last_updated, :scraper)
+            INSERT INTO showtimes (id, cinema_shortcode, title, norm_title, link, datetime, description, image_src, thumbnail, last_updated, scraper)
+            VALUES (:id, :cinema_shortcode, :title, :norm_title, :link, :datetime, :description, :image_src, :thumbnail, :last_updated, :scraper)
             ON CONFLICT(id) DO UPDATE SET
                 link = excluded.link,
+                norm_title = excluded.norm_title,
                 description = excluded.description,
                 image_src = excluded.image_src,
                 thumbnail = excluded.thumbnail,

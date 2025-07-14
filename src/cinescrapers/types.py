@@ -28,4 +28,5 @@ class EnrichedShowTime(ShowTime):
     id: str
     last_updated: datetime.datetime
     scraper: str
+    norm_title: str  # Normalized title for matching / sorting
     thumbnail: str | None
