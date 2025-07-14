@@ -12,7 +12,7 @@ CINEMAS = [
         longitude=-0.13116586768030816,
     ),
     Cinema(
-        shortname="PCC",
+        shortname="Prince Charles",
         name="Prince Charles Cinema",
         shortcode="PC",
         url="https://princecharlescinema.com",
