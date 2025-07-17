@@ -1,6 +1,7 @@
 import dateparser
 from playwright.sync_api import Error as PlayWrightError
 from playwright.sync_api import sync_playwright
+from pyvirtualdisplay import Display
 from rich import print
 
 from cinescrapers.exceptions import ScrapingError
@@ -12,6 +13,8 @@ INDEX_URL = "https://whatson.bfi.org.uk/Online/article/filmsindex"
 
 def scrape() -> list[ShowTime]:
     showtimes = []
+    display = Display(visible=False, size=(1920, 1080))
+    display.start()
     with sync_playwright() as p:
         # Couldn't make it work headlessly, maybe because I have no idea
         # what I'm doing
@@ -83,4 +86,5 @@ def scrape() -> list[ShowTime]:
                 showtimes.append(showtime)
             film_page.close()
 
+    display.stop()
     return showtimes
