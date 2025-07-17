@@ -49,7 +49,9 @@ def get_yolo_centre(pil_img: Image.Image) -> tuple[int, int]:
     yolo_model = get_yolo_model()
     results = yolo_model(pil_img)
     boxes = results[0].boxes.xyxy.cpu().numpy()
+    print(f"Found {len(boxes)} boxes with YOLO")
     if len(boxes) > 0:
+        # Just use the first box, which is expected to have the highest confidence
         x1, y1, x2, y2 = boxes[0]
         cx = int((x1 + x2) / 2)
         cy = int((y1 + y2) / 2)
@@ -84,6 +86,7 @@ def smart_square_thumbnail(
         method = "yolo"
     except ImageCentreNotFound:
         try:
+            # It seems like this rarely gets a result where yolo fails.
             cx, cy = get_facial_centre(cv_img)
             method = "facial"
         except ImageCentreNotFound:
@@ -91,13 +94,19 @@ def smart_square_thumbnail(
             cx, cy = width // 2, height // 2
             method = "centre"
 
-    # Calculate square crop
+    # Calculate square crop size (largest possible square that fits in the image)
     crop_size = min(width, height)
     half = crop_size // 2
-    left = max(0, cx - half)
-    top = max(0, cy - half)
-    right = min(width, cx + half)
-    bottom = min(height, cy + half)
+
+    # Constrain the center to ensure we can crop a full square
+    cx = max(half, min(width - half, cx))
+    cy = max(half, min(height - half, cy))
+
+    # Now crop the square
+    left = cx - half
+    top = cy - half
+    right = cx + half
+    bottom = cy + half
 
     cropped = pil_img.crop((left, top, right, bottom))
     cropped = cropped.resize((size, size), Image.LANCZOS)  # type: ignore
