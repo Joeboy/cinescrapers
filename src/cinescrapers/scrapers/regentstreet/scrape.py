@@ -28,7 +28,7 @@ def scrape() -> list[ShowTime]:
 
         showtimes = []
         for i, link in enumerate(movie_hrefs):
-            print(f"Film {1 + i} of {len(movie_hrefs)}")
+            print(f"Film {1 + i} of {len(movie_hrefs)} ({CINEMA_SHORTNAME})")
             film_page = context.new_page()
             film_page.goto(link)
 

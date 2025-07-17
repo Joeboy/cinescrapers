@@ -1,7 +1,7 @@
 import dateparser
 from playwright.sync_api import Error as PlayWrightError
 from playwright.sync_api import sync_playwright
-from pyvirtualdisplay import Display
+from pyvirtualdisplay.display import Display
 from rich import print
 
 from cinescrapers.exceptions import ScrapingError
