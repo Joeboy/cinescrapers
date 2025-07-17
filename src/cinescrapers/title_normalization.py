@@ -14,14 +14,31 @@ TITLE_REGEXES = [
     r"^Seniors' Free Matinee: (.*)$",
     r"^Seniors' Paid Matinee: (.*)$",
     r"^Cine-real presents: (.*)$",
+    r"^Cinematix Escapes Presents: (.*)$",
     r"^Classic Matinee: (.*)$",
+    r"^(.*) *\+ intro by .*$",
+    r"^(.*) *\+ introduction by .*$",
+    r"^(.*) *plus intro by .*$",
+    r"^(.*) *with intro by .*$",
+    r"^(.*) *\+ pre-recorded intro by .*$",
+    r"^(.*) *\+ Panel discussion\b.*$",
+    r"^(.*) *plus Panel discussion\b.*$",
+    r"^(.*) *\+ Q&A\b.*$",
+    r"^(.*) *plus Q&A\b.*$",
+    r"^(.*) *\+ recorded Q&A\b.*$",
+    r"^(.*) *plus recorded Q&A\b.*$",
+    r"^(.*) *\+ director Q&A\b.*$",
+    r"^(.*) *plus director Q&A\b.*$",
     r"^(.*) \(\d\dth anniversary\)$",
+    r"^(.*) *- *\d\dth anniversary$",
+    r"^(.*) *\(Subtitled\) *$",
     r"^Family Films: (.*)$",
     r"^Funeral Parade Presents '(.*)'$",
     r"^(.*) *Classics Presented in 35mm$",
     r"^Member exclusive: (.*)$",
     r"^Member Picks: (.*)$",
     r"^Members' Screening: (.*)$",
+    r"^Outdoor Cinema: (.*)$",
     r"^(.*)$",
 ]
 
@@ -59,8 +76,9 @@ def normalize_title(title: str) -> str:
             title = PUNC_REGEX.sub(" ", title)
             title = AMP_REGEX.sub(" AND ", title)
             title = re.sub(r"\s+", " ", title)
-
-            return title.strip()
+            title = title.strip()
+            assert title
+            return title
     raise RuntimeError(
         "We shouldn't ever get here as the last regex should match anything."
     )

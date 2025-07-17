@@ -15,3 +15,5 @@ def test_normalize_title():
     )
     assert normalize_title("Classic Matinee: Casablanca") == "CASABLANCA"
     assert normalize_title("Lilo & Stitch") == normalize_title("LILO AND STITCH")
+    assert normalize_title("Barry Lyndon (50th Anniversary)") == "BARRY LYNDON"
+    assert normalize_title("Barry Lyndon - 50th Anniversary") == "BARRY LYNDON"
