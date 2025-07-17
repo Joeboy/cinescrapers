@@ -179,7 +179,7 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     showtimes = scraper()
     elapsed = time.perf_counter() - t
     print(
-        f"Scraped {len(showtimes)} showtimes in {elapsed:.2f} seconds ({scraper_name})."
+        f"Scraped {len(showtimes)} showtimes in {humanize.naturaldelta(elapsed)} ({scraper_name})."
     )
 
     now = datetime.datetime.now()
@@ -359,7 +359,7 @@ def refresh_cmd():
     else:
         print("No failures.")
     elapsed = time.perf_counter() - t
-    print(f"Completed in {elapsed:.2f} seconds.")
+    print(f"Completed in {humanize.naturaldelta(elapsed)}.")
 
 
 @cli.command("upload")
