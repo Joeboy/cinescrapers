@@ -13,25 +13,26 @@ API), please let me know!
 
 (sort of done, anyway, there are very probably bugs)
 
-* Prince Charles Cinema
-* Close-Up Film Centre
-* Barbican Cinemas
-* BFI Southbank
-* The ICA
-* The Castle Cinema
-* The Genesis
-* The Rio
 * Arthouse Crouch End
-* The Arzner
-* Peckhamplex
-* The Lexi Cinema
-* Garden Cinema
-* Rich Mix
+* Barbican Cinemas
 * Bertha Dochouse
+* BFI Southbank
+* The Arzner
+* The Castle Cinema
+* Close-Up Film Centre
+* Garden Cinema
+* The Genesis
+* The ICA
 * Kiln Theatre
-* The Romford Lumiere
-* Regent Street Cinema
+* The Lexi Cinema
+* Peckhamplex
 * Phoenix Cinema
+* Prince Charles Cinema
+* Regent Street Cinema
+* Rich Mix
+* The Rio
+* The Romford Lumiere
+* Throwley Yard
 
 ## TODO
 
@@ -41,7 +42,6 @@ API), please let me know!
 * ActOne
 * Ciné Reel
 * Electric Cinema
-* Throwley Yard
 * David Lean Cinema
 * Chiswick Cinema
 * Cinema Museum, Kenninton

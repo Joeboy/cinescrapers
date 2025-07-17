@@ -5,18 +5,18 @@ from rich import print
 from cinescrapers.types import ShowTime
 from cinescrapers.utils import parse_date_without_year
 
-CINEMA_SHORTNAME = "Phoenix"
-CINEMA_NAME = "Phoenix Cinema"
-CINEMA_SHORTCODE = "PX"
-BASE_URL = "https://www.phoenixcinema.co.uk"
-URL = f"{BASE_URL}/whats-on"
+CINEMA_SHORTNAME = "Throwley Yard"
+CINEMA_NAME = "Throwley Yard Cinema"
+CINEMA_SHORTCODE = "TY"
+BASE_URL = "https://throwleyyardcinema.co.uk"
+URL = f"{BASE_URL}/whats-on/"
 
 HREF_RE = re.compile(r"href=\"([^\"]*)\"", re.I)
-MOVIE_LINK_RE = re.compile(r"^https://www.phoenixcinema.co.uk/movie/.*$")
+MOVIE_LINK_RE = re.compile(r"^https://www.throwleyyardcinema.co.uk/movie/.*$")
 
 
 def scrape() -> list[ShowTime]:
-    """This is basically the same as the Regent Street Cinema scraper"""
+    """This is basically the same as the Regent Street Cinema and Phoenix scrapers"""
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(java_script_enabled=False)
@@ -47,7 +47,7 @@ def scrape() -> list[ShowTime]:
             description = film_page.locator(
                 "meta[property='og:description']"
             ).get_attribute("content")
-            assert description
+            assert isinstance(description, str)
             image_src = film_page.locator("meta[property='og:image']").get_attribute(
                 "content"
             )

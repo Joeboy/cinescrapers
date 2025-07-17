@@ -191,6 +191,16 @@ CINEMAS = [
         latitude=51.5912269195774,
         longitude=-0.16375488428448623,
     ),
+    Cinema(
+        shortname="Throwley Yard",
+        name="Throwley Yard Cinema",
+        shortcode="TY",
+        url="https://throwleyyardcinema.co.uk",
+        address="Throwley Yard, 2 Throwley Rd, Sutton, SM1 4GJ",
+        phone=None,
+        latitude=51.3709791550647,
+        longitude=-0.18895579518094016,
+    ),
 ]
 
 
