@@ -201,6 +201,16 @@ CINEMAS = [
         latitude=51.3709791550647,
         longitude=-0.18895579518094016,
     ),
+    Cinema(
+        shortname="Ciné Lumière",
+        name="Ciné Lumière",
+        shortcode="CL",
+        url="https://www.institut-francais.org.uk/whats-on/cinema/",
+        address="17 Queensberry Place, London SW7 2DT",
+        phone="+44 20 7871 3545",
+        latitude=51.49465710635268,
+        longitude=-0.17721467782624262,
+    ),
 ]
 
 

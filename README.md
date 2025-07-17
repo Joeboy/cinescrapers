@@ -19,6 +19,7 @@ API), please let me know!
 * BFI Southbank
 * The Arzner
 * The Castle Cinema
+* Cine Lumiere
 * Close-Up Film Centre
 * Garden Cinema
 * The Genesis
@@ -37,7 +38,6 @@ API), please let me know!
 ## TODO
 
 * BFI IMAX
-* Cine Lumiere, South Kensington
 * The Nickel
 * ActOne
 * Ciné Reel
