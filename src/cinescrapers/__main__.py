@@ -351,7 +351,10 @@ def refresh_cmd():
 
                 traceback.print_exc()
                 failed.append(scraper)
-    print(f"Failed: {failed}")
+    if failed:
+        print(f"Failed: {failed}")
+    else:
+        print("No failures.")
 
 
 @cli.command("upload")
