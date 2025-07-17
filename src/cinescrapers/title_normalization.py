@@ -39,6 +39,7 @@ TITLE_REGEXES = [
     r"^Member Picks: (.*)$",
     r"^Members' Screening: (.*)$",
     r"^Outdoor Cinema: (.*)$",
+    r"^Phoenix Classics: *(.*)$",
     r"^(.*)$",
 ]
 

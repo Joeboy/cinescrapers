@@ -31,6 +31,7 @@ API), please let me know!
 * Kiln Theatre
 * The Romford Lumiere
 * Regent Street Cinema
+* Phoenix Cinema
 
 ## TODO
 
@@ -41,7 +42,6 @@ API), please let me know!
 * Ciné Reel
 * Electric Cinema
 * Throwley Yard
-* Phoenix Cinema
 * David Lean Cinema
 * Chiswick Cinema
 * Cinema Museum, Kenninton

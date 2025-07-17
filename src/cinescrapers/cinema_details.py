@@ -181,6 +181,16 @@ CINEMAS = [
         latitude=51.5169546084828,
         longitude=-0.14282968762920947,
     ),
+    Cinema(
+        shortname="Phoenix",
+        name="Phoenix Cinema",
+        shortcode="PX",
+        url="https://www.phoenixcinema.co.uk",
+        address="52 High Road, East Finchley, London N2 9PJ",
+        phone="+44 20 8444 6789",
+        latitude=51.5912269195774,
+        longitude=-0.16375488428448623,
+    ),
 ]
 
 
