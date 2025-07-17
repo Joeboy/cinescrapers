@@ -166,7 +166,7 @@ def get_thumbnail(showtime: ShowTime) -> str | None:
     thumbnail_filepath = THUMBNAILS_FOLDER / f"{filepath.stem}.jpg"
     if not thumbnail_filepath.exists():
         smart_square_thumbnail(filepath, thumbnail_filepath, 150)
-    return thumbnail_filepath.name
+    return thumbnail_filepath.stem
 
 
 def scrape_to_sqlite(scraper_name: str) -> None:
