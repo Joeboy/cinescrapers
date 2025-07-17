@@ -25,6 +25,9 @@ IMAGES_CACHE.mkdir(parents=True, exist_ok=True)
 THUMBNAILS_FOLDER = Path(__file__).parent / "scraped_images" / "thumbnails"
 THUMBNAILS_FOLDER.mkdir(parents=True, exist_ok=True)
 
+# How long since the last update before we need to refresh a cinema's listings
+MAX_STALENESS = datetime.timedelta(days=5)
+
 
 def get_scrapers() -> list[str]:
     """Get a list of available scraper names."""
@@ -311,9 +314,9 @@ def list_films_cmd():
 @cli.command("refresh")
 def refresh_cmd():
     """Refresh cinemas without recent updates"""
-    max_staleness = datetime.timedelta(days=5)
+    t = time.perf_counter()
     now = datetime.datetime.now()
-    min_datetime = now - max_staleness
+    min_datetime = now - MAX_STALENESS
     ensure_showtimes_table_exists()
     conn = sqlite3.connect("showtimes.db")
     cursor = conn.cursor()
@@ -355,6 +358,8 @@ def refresh_cmd():
         print(f"Failed: {failed}")
     else:
         print("No failures.")
+    elapsed = time.perf_counter() - t
+    print(f"Completed in {elapsed:.2f} seconds.")
 
 
 @cli.command("upload")
