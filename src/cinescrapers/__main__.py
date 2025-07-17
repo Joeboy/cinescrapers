@@ -15,6 +15,7 @@ import requests
 from rich import print
 
 from cinescrapers.cinema_details import CINEMAS
+from cinescrapers.cinemap import generate_cinema_map
 from cinescrapers.title_normalization import normalize_title
 from cinescrapers.types import EnrichedShowTime, ShowTime
 from cinescrapers.upload import get_s3_client, upload_file
@@ -399,6 +400,13 @@ def upload():
         else:
             s3_key = f"thumbnails/{path.name}"
             upload_file(s3_client, path, s3_key)
+
+
+@cli.command("generate-map")
+def generate_map_cmd():
+    """Generate an interactive map of all cinemas"""
+    output_path = Path(__file__).parent.parent.parent.parent / "filmhose" / "public" / "cinema_map.html"
+    generate_cinema_map(output_path)
 
 
 @cli.command("scrape")
