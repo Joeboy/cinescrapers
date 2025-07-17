@@ -159,10 +159,32 @@ def get_thumbnail(showtime: ShowTime) -> str | None:
     filename = get_hashed(showtime.image_src)
     filepath = IMAGES_CACHE / filename
     if not filepath.exists():
-        response = requests.get(showtime.image_src)
+        # Add headers to mimic a browser request
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+        }
+
+        # Add referer header if the image is from the same domain as the showtime link
+        try:
+            from urllib.parse import urlparse
+
+            image_domain = urlparse(showtime.image_src).netloc
+            link_domain = urlparse(showtime.link).netloc
+            if image_domain == link_domain:
+                headers["Referer"] = showtime.link
+        except Exception:
+            pass
+
+        response = requests.get(showtime.image_src, headers=headers, timeout=10)
         if not response.ok:
             print(
-                f"Failed to fetch {showtime.image_src} for {showtime.title} ({showtime.cinema_shortcode}) ({response.status_code})"
+                f"Failed to fetch '{showtime.image_src}' for {showtime.title} ({showtime.cinema_shortcode}) ({response.status_code})"
             )
             return None
         with filepath.open("wb") as f:
@@ -405,7 +427,12 @@ def upload():
 @cli.command("generate-map")
 def generate_map_cmd():
     """Generate an interactive map of all cinemas"""
-    output_path = Path(__file__).parent.parent.parent.parent / "filmhose" / "public" / "cinema_map.html"
+    output_path = (
+        Path(__file__).parent.parent.parent.parent
+        / "filmhose"
+        / "public"
+        / "cinema_map.html"
+    )
     generate_cinema_map(output_path)
 
 
