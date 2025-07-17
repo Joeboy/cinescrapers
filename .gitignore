@@ -19,3 +19,9 @@ react_app/my-app/dist/
 showtimes.db
 yolov8n.pt
 src/cinescrapers/image_cache/
+tests/thumbnails/test_output_thumbnail.jpg
+src/cinescrapers/scraped_images/
+src/cinescrapers/cinemas.json
+src/cinescrapers/cinescrapers.json
+.env
+.envrc
