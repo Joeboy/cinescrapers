@@ -25,6 +25,9 @@ TITLE_REGEXES = [
     r"^(.*)$",
 ]
 
+AMP_REGEX = re.compile(r" & ")
+PUNC_REGEX = re.compile(r"[:-]")
+
 
 def normalize_quotes(text: str) -> str:
     """Convert curly/special apostrophes and quotes to straight ones."""
@@ -48,12 +51,16 @@ def normalize_quotes(text: str) -> str:
 def normalize_title(title: str) -> str:
     title = title.strip().upper()
     title = normalize_quotes(title)
-    title = re.sub(r"\s+", " ", title)
 
     for regex in TITLE_REGEXES:
         match = re.match(regex, title, re.I)
         if match:
-            return match.group(1).strip()
+            title = match.group(1)
+            title = PUNC_REGEX.sub(" ", title)
+            title = AMP_REGEX.sub(" AND ", title)
+            title = re.sub(r"\s+", " ", title)
+
+            return title.strip()
     raise RuntimeError(
         "We shouldn't ever get here as the last regex should match anything."
     )
