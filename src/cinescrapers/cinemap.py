@@ -3,8 +3,11 @@ from pathlib import Path
 from cinescrapers.cinema_details import CINEMAS
 
 
-def generate_cinema_map(output_path: Path) -> None:
+def generate_cinema_map() -> None:
     """Generate a map that shows cinema markers with current showtime counts."""
+
+    output_path = Path(__file__).parent / "cinema_map.html"
+
     # Calculate center as midpoint of outer cinemas
     lats = [c.latitude for c in CINEMAS]
     lons = [c.longitude for c in CINEMAS]

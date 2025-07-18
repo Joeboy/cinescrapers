@@ -394,8 +394,15 @@ def upload():
     s3_client = get_s3_client()
     cinemas_json_path = Path(__file__).parent / "cinemas.json"
     cinescrapers_json_path = Path(__file__).parent / "cinescrapers.json"
+    sitemap_xml_path = Path(__file__).parent / "sitemap.xml"
+    map_html_path = Path(__file__).parent / "cinema_map.html"
+    generate_cinema_map()
+    generate_sitemap()
     assert cinemas_json_path.exists()
     assert cinescrapers_json_path.exists()
+    assert sitemap_xml_path.exists()
+    assert map_html_path.exists()
+
     upload_file(
         s3_client,
         cinemas_json_path,
@@ -405,6 +412,16 @@ def upload():
         s3_client,
         cinescrapers_json_path,
         cinescrapers_json_path.name,
+    )
+    upload_file(
+        s3_client,
+        sitemap_xml_path,
+        sitemap_xml_path.name,
+    )
+    upload_file(
+        s3_client,
+        map_html_path,
+        map_html_path.name,
     )
 
     # One day, it might be better to only upload the thumbnails for
@@ -427,24 +444,12 @@ def upload():
 @cli.command("generate-map")
 def generate_map_cmd():
     """Generate an interactive map of all cinemas"""
-    output_path = (
-        Path(__file__).parent.parent.parent.parent
-        / "filmhose"
-        / "public"
-        / "cinema_map.html"
-    )
-    generate_cinema_map(output_path)
+    generate_cinema_map()
 
 
-@cli.command("generate-sitemap")
-def generate_sitemap_cmd():
+def generate_sitemap():
     """Generate a sitemap.xml file"""
-    output_path = (
-        Path(__file__).parent.parent.parent.parent
-        / "filmhose"
-        / "public"
-        / "sitemap.xml"
-    )
+    output_path = Path(__file__).parent / "sitemap.xml"
     template_path = Path(__file__).parent / "sitemap.xml.template"
     template = template_path.read_text()
 
@@ -472,6 +477,11 @@ def generate_sitemap_cmd():
     ).replace("<!-- TODAY -->", datetime.datetime.now().date().isoformat())
     output_path.write_text(sitemap_content)
     print(f"Sitemap generated at {output_path}")
+
+
+@cli.command("generate-sitemap")
+def generate_sitemap_cmd():
+    generate_sitemap()
 
 
 @cli.command("scrape")
