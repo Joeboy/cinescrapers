@@ -8,7 +8,7 @@ from rich import print
 
 CINEMA_SHORTNAME = "Castle"
 CINEMA_NAME = "The Castle Cinema"
-CINEMA_SHORTCODE="CS"
+CINEMA_SHORTCODE = "CS"
 BASE_URL = "https://thecastlecinema.com"
 LISTINGS_URL = f"{BASE_URL}/listings/film/"
 
@@ -39,11 +39,13 @@ def scrape() -> list[ShowTime]:
             assert title is not None
 
             img_container = fd.locator("picture img").first
-            assert img_container.count() == 1
-            img_src = img_container.get_attribute("src")
-            assert img_src is not None
-            if not img_src.startswith("http"):
-                img_src = f"{BASE_URL}{img_src}"
+            if img_container.count() == 1:
+                img_src = img_container.get_attribute("src")
+                assert img_src
+                if not img_src.startswith("http"):
+                    img_src = f"{BASE_URL}{img_src}"
+            else:
+                img_src = None
 
             film_page = browser.new_page()
             film_page.goto(link)

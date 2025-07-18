@@ -74,9 +74,12 @@ def scrape() -> list[ShowTime]:
                     time_str = time_e.inner_text()
                     date_time_str = f"{date_str} {time_str}"
                     date_time = parse_date_without_year(date_time_str)
-                    # As of now, all the film_data is present. Maybe one day it won't be?
-                    # Let's worry about that if / when it happens
-                    showtime_data = film_data[title]
+                    showtime_data = film_data.get(title)
+                    if showtime_data is None:
+                        # In the cases I'm seeing now, this just means there are
+                        # no more showings of the film, so we can skip it
+                        print(f"Warning: No film data for title '{title}'")
+                        continue
                     showtime_data |= {
                         "cinema_shortcode": CINEMA_SHORTCODE,
                         "datetime": date_time,
