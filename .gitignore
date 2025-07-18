@@ -23,5 +23,7 @@ tests/thumbnails/test_output_thumbnail.jpg
 src/cinescrapers/scraped_images/
 src/cinescrapers/cinemas.json
 src/cinescrapers/cinescrapers.json
+src/cinescrapers/cinema_map.html
+src/cinescrapers/sitemap.xml
 .env
 .envrc
