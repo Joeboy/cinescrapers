@@ -241,6 +241,16 @@ CINEMAS = [
         latitude=51.51085536513503,
         longitude=-0.22543731646459603,
     ),
+    Cinema(
+        shortname="Coldharbour Blue",
+        name="Coldharbour Blue",
+        shortcode="CB",
+        url="https://www.coldharbourblue.com",
+        address="259-260 Hardess Street, Loughborough Junction, London, SE24 0HN",
+        phone="07568 372401",
+        latitude=51.46564642050339,
+        longitude=-0.10114100976453855,
+    ),
 ]
 
 
