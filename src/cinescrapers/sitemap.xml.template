@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <url>
+        <loc>https://filmhose.uk/</loc>
+        <lastmod><!-- TODAY --></lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <url>
+        <loc>https://filmhose.uk/listings</loc>
+        <lastmod><!-- TODAY --></lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <url>
+        <loc>https://filmhose.uk/hosepipe</loc>
+        <lastmod><!-- TODAY --></lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://filmhose.uk/cinemas</loc>
+        <lastmod><!-- TODAY --></lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://filmhose.uk/titles</loc>
+        <lastmod><!-- TODAY --></lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://filmhose.uk/about</loc>
+        <lastmod><!-- TODAY --></lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
+    <url>
+        <loc>https://filmhose.uk/help</loc>
+        <lastmod><!-- TODAY --></lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
+    <!-- CINEMA PAGES -->
+
+
+</urlset>
