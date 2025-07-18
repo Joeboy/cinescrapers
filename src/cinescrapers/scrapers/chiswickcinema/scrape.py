@@ -40,6 +40,8 @@ def scrape() -> list[ShowTime]:
                 "content"
             )
             assert title
+            if title.endswith(" – The Chiswick Cinema"):
+                title = title[: -len(" – The Chiswick Cinema")]
 
             description_e = film_page.locator(".film-details__synopsis")
             assert description_e.count() == 1

@@ -35,6 +35,7 @@ TITLE_REGEXES = [
     r"^Family Films: (.*)$",
     r"^Funeral Parade Presents '(.*)'$",
     r"^(.*) *Classics Presented in 35mm$",
+    r"^(.*) *- *The Chiswick Cinema$",
     r"^Member exclusive: (.*)$",
     r"^Member Picks: (.*)$",
     r"^Members' Screening: (.*)$",
@@ -66,9 +67,22 @@ def normalize_quotes(text: str) -> str:
     return text.translate(replacements)
 
 
+def normalize_dashes(text: str) -> str:
+    """Convert various types of dashes to regular hyphens."""
+    replacements = {
+        ord("–"): "-",  # en-dash
+        ord("—"): "-",  # em-dash
+        ord("―"): "-",  # horizontal bar
+        ord("‒"): "-",  # figure dash
+        ord("−"): "-",  # minus sign
+    }
+    return text.translate(replacements)
+
+
 def normalize_title(title: str) -> str:
     title = title.strip().upper()
     title = normalize_quotes(title)
+    title = normalize_dashes(title)
 
     for regex in TITLE_REGEXES:
         match = re.match(regex, title, re.I)
