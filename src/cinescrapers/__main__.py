@@ -187,8 +187,40 @@ def get_thumbnail(showtime: ShowTime) -> str | None:
                 f"Failed to fetch '{showtime.image_src}' for {showtime.title} ({showtime.cinema_shortcode}) ({response.status_code})"
             )
             return None
+
+        # Check if the response content is actually an image by examining the file signature
+        content = response.content
+        if len(content) < 8:
+            print(
+                f"Response too short to be an image for '{showtime.image_src}' for {showtime.title} ({showtime.cinema_shortcode})"
+            )
+            return None
+
+        # Check common image file signatures (magic numbers)
+        image_signatures = [
+            b"\xff\xd8\xff",  # JPEG
+            b"\x89PNG\r\n\x1a\n",  # PNG
+            b"GIF87a",  # GIF87a
+            b"GIF89a",  # GIF89a
+            b"RIFF",  # WebP (starts with RIFF, followed by WEBP later)
+            b"\x00\x00\x01\x00",  # ICO
+            b"BM",  # BMP
+        ]
+
+        is_image = any(content.startswith(sig) for sig in image_signatures)
+        # Special case for WebP which has RIFF header but needs to check for WEBP signature too
+        if content.startswith(b"RIFF") and len(content) >= 12:
+            is_image = content[8:12] == b"WEBP"
+
+        if not is_image:
+            content_type = response.headers.get("content-type", "unknown")
+            print(
+                f"Response is not an image (content-type: {content_type}, no image signature found) for '{showtime.image_src}' for {showtime.title} ({showtime.cinema_shortcode})"
+            )
+            return None
+
         with filepath.open("wb") as f:
-            f.write(response.content)
+            f.write(content)
     thumbnail_filepath = THUMBNAILS_FOLDER / f"{filepath.stem}.jpg"
     if not thumbnail_filepath.exists():
         smart_square_thumbnail(filepath, thumbnail_filepath, 150)
