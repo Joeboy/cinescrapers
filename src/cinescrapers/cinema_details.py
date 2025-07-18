@@ -221,6 +221,26 @@ CINEMAS = [
         latitude=51.493176129844095,
         longitude=-0.25100011646565906,
     ),
+    Cinema(
+        shortname="Electric Cinema Portobello",
+        name="Electric Cinema Portobello",
+        shortcode="EP",
+        url="https://www.electriccinema.co.uk/cinemas/portobello/",
+        address="191 Portobello Road, London W11 2ED",
+        phone="020 7908 9696",
+        latitude=51.515721394509676,
+        longitude=-0.2048903029694356,
+    ),
+    Cinema(
+        shortname="Electric Cinema White City",
+        name="Electric Cinema White City",
+        shortcode="EW",
+        url="https://www.electriccinema.co.uk/cinemas/whitecity/",
+        address="2 Television Centre, 101 Wood Lane, London W12 7FR",
+        phone="020 7908 9696",
+        latitude=51.51085536513503,
+        longitude=-0.22543731646459603,
+    ),
 ]
 
 

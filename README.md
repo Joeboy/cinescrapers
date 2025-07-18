@@ -35,6 +35,9 @@ API), please let me know!
 * The Rio
 * The Romford Lumiere
 * Throwley Yard
+* Electric Cinema Portobello
+* Electric Cinema White City
+
 
 ## TODO
 
@@ -42,7 +45,6 @@ API), please let me know!
 * The Nickel
 * ActOne
 * Ciné Reel
-* Electric Cinema
 * David Lean Cinema
 * Cinema Museum, Kenninton
 * Theatreship, Canary Wharf
