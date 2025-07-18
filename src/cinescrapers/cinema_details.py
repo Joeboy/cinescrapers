@@ -211,6 +211,16 @@ CINEMAS = [
         latitude=51.49465710635268,
         longitude=-0.17721467782624262,
     ),
+    Cinema(
+        shortname="Chiswick Cinema",
+        name="Chiswick Cinema",
+        shortcode="CC",
+        url="https://www.chiswickcinema.co.uk",
+        address="94-96 Chiswick High Road, London W4 1SH",
+        phone=None,
+        latitude=51.493176129844095,
+        longitude=-0.25100011646565906,
+    ),
 ]
 
 

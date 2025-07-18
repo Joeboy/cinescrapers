@@ -19,6 +19,7 @@ API), please let me know!
 * BFI Southbank
 * The Arzner
 * The Castle Cinema
+* Chiswick Cinema
 * Cine Lumiere
 * Close-Up Film Centre
 * Garden Cinema
@@ -43,7 +44,6 @@ API), please let me know!
 * Ciné Reel
 * Electric Cinema
 * David Lean Cinema
-* Chiswick Cinema
 * Cinema Museum, Kenninton
 * Theatreship, Canary Wharf
 * Whirled Cinema
