@@ -1,6 +1,7 @@
 """Code to attempt to get normalized movie titles for title matching, sorting etc"""
 
 import re
+import unicodedata
 
 
 TITLE_REGEXES = [
@@ -45,7 +46,7 @@ TITLE_REGEXES = [
 ]
 
 AMP_REGEX = re.compile(r" & ")
-PUNC_REGEX = re.compile(r"[:-]")
+PUNC_REGEX = re.compile(r"[\.\!,:-]")
 
 
 def normalize_quotes(text: str) -> str:
@@ -79,10 +80,33 @@ def normalize_dashes(text: str) -> str:
     return text.translate(replacements)
 
 
+def normalize_accents(text: str) -> str:
+    """Convert accented characters to their ASCII equivalents."""
+    # First handle common ligatures that NFD doesn't decompose
+    ligature_replacements = {
+        "æ": "ae",
+        "Æ": "AE",
+        "œ": "oe",
+        "Œ": "OE",
+        "ß": "ss",
+        "ẞ": "SS",
+    }
+
+    for ligature, replacement in ligature_replacements.items():
+        text = text.replace(ligature, replacement)
+
+    # Normalize to NFD (decomposed form) to separate base characters from combining marks
+    nfd = unicodedata.normalize("NFD", text)
+    # Filter out combining characters (accents, diacritics)
+    ascii_text = "".join(char for char in nfd if unicodedata.category(char) != "Mn")
+    return ascii_text
+
+
 def normalize_title(title: str) -> str:
     title = title.strip().upper()
     title = normalize_quotes(title)
     title = normalize_dashes(title)
+    title = normalize_accents(title)
 
     for regex in TITLE_REGEXES:
         match = re.match(regex, title, re.I)
