@@ -16,6 +16,7 @@ from rich import print
 
 from cinescrapers.cinema_details import CINEMAS
 from cinescrapers.cinemap import generate_cinema_map
+from cinescrapers.indexnow import submit_to_indexnow
 from cinescrapers.title_normalization import normalize_title
 from cinescrapers.types import EnrichedShowTime, ShowTime
 from cinescrapers.upload import get_s3_client, upload_file
@@ -514,6 +515,14 @@ def generate_sitemap():
 @cli.command("generate-sitemap")
 def generate_sitemap_cmd():
     generate_sitemap()
+
+
+@cli.command("submit-indexnow")
+def submit_indexnow_cmd():
+    """Submit URLs to IndexNow"""
+    submit_to_indexnow(f"https://filmhose.uk/cinemas")
+    for cinema in CINEMAS:
+        submit_to_indexnow(f"https://filmhose.uk/cinemas/{cinema.shortname}")
 
 
 @cli.command("scrape")
