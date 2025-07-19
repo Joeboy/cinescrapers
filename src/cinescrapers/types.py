@@ -1,7 +1,8 @@
 import datetime
 
+from pydantic import BaseModel, computed_field
 
-from pydantic import BaseModel
+from .utils import extract_uk_postcode
 
 
 class Cinema(BaseModel):
@@ -9,10 +10,18 @@ class Cinema(BaseModel):
     shortname: str
     name: str
     url: str
-    address: str | None
+    address: str
     phone: str | None
     latitude: float
     longitude: float
+
+    @computed_field
+    @property
+    def postcode(self) -> str | None:
+        """Auto-generated postcode extracted from the address. Let's assume
+        every address has a postcode in it."""
+
+        return extract_uk_postcode(self.address)
 
 
 class ShowTime(BaseModel):
