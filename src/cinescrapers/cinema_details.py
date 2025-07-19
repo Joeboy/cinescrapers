@@ -251,7 +251,20 @@ CINEMAS = [
         latitude=51.46564642050339,
         longitude=-0.10114100976453855,
     ),
+    Cinema(
+        shortname="ActOne",
+        name="ActOne Cinema",
+        shortcode="AC",
+        url="https://www.actonecinema.co.uk",
+        address="119 - 121 High Street, London, W3 6NA",
+        phone=None,
+        latitude=51.50672086840265,
+        longitude=-0.26855534529988,
+    ),
 ]
 
 
 CINEMAS_BY_SHORTCODE = {c.shortcode: c for c in CINEMAS}
+
+# Test for uniqueness of shortcodes:
+assert len(CINEMAS_BY_SHORTCODE) == len(CINEMAS), "Duplicate shortcodes found"

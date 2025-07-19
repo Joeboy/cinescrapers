@@ -13,6 +13,7 @@ API), please let me know!
 
 (sort of done, anyway, there are very probably bugs)
 
+* ActOne
 * Arthouse Crouch End
 * Barbican Cinemas
 * Bertha Dochouse
@@ -22,6 +23,7 @@ API), please let me know!
 * Chiswick Cinema
 * Cine Lumiere
 * Close-Up Film Centre
+* Coldharbour Blue
 * Garden Cinema
 * The Genesis
 * The ICA
@@ -38,17 +40,14 @@ API), please let me know!
 * Electric Cinema Portobello
 * Electric Cinema White City
 
-
 ## TODO
 
 * BFI IMAX
 * The Nickel
-* ActOne
 * Ciné Reel
 * David Lean Cinema
 * Cinema Museum, Kenninton
 * Theatreship, Canary Wharf
-* Whirled Cinema
 * Sands Films
 
 ## Usage
