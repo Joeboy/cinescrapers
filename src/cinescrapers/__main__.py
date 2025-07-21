@@ -368,7 +368,8 @@ def list_films_cmd():
 
 
 @cli.command("refresh")
-def refresh_cmd():
+@click.option("--scrape-all", "-a", is_flag=True, help="Run all scrapers, even if not stale")
+def refresh_cmd(scrape_all: bool = False):
     """Refresh cinemas without recent updates"""
     t = time.perf_counter()
     now = datetime.datetime.now()
@@ -390,7 +391,7 @@ def refresh_cmd():
             scrapers_to_run.append(scraper)
         else:
             latest_update = datetime.datetime.fromisoformat(latest_update_str)
-            if latest_update < min_datetime:
+            if latest_update < min_datetime or scrape_all:
                 scrapers_to_run.append(scraper)
     print(f"Running scrapers: {', '.join(scrapers_to_run)}")
 

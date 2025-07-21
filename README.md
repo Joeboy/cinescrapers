@@ -22,6 +22,7 @@ API), please let me know!
 * The Castle Cinema
 * Chiswick Cinema
 * Cine Lumiere
+* Ciné Real
 * Close-Up Film Centre
 * Coldharbour Blue
 * Garden Cinema
@@ -44,7 +45,6 @@ API), please let me know!
 
 * BFI IMAX
 * The Nickel
-* Ciné Reel
 * David Lean Cinema
 * Cinema Museum, Kenninton
 * Theatreship, Canary Wharf

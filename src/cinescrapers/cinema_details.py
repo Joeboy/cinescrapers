@@ -261,6 +261,16 @@ CINEMAS = [
         latitude=51.50672086840265,
         longitude=-0.26855534529988,
     ),
+    Cinema(
+        shortname="Ciné Real",
+        name="Ciné Real",
+        shortcode="CR",
+        url="https://www.cine-real.com",
+        address="35 Lower Clapton Rd, London E5 0NS",
+        phone="020 8985 1766",
+        latitude=51.551013806271335,
+        longitude=-0.052535149077327904,
+    ),
 ]
 
 
