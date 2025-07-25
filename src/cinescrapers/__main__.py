@@ -521,9 +521,11 @@ def generate_sitemap_cmd():
 @cli.command("submit-indexnow")
 def submit_indexnow_cmd():
     """Submit URLs to IndexNow"""
+    submit_to_indexnow(f"https://filmhose.uk/")
     submit_to_indexnow(f"https://filmhose.uk/cinemas")
     for cinema in CINEMAS:
         submit_to_indexnow(f"https://filmhose.uk/cinemas/{cinema.shortname}")
+        submit_to_indexnow(f"https://filmhose.uk/cinema-listings/{cinema.shortcode}")
 
 
 @cli.command("scrape")
