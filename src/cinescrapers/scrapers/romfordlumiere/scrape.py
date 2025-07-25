@@ -67,7 +67,7 @@ def scrape() -> list[ShowTime]:
             buy_tickets_page = browser.new_page()
             buy_tickets_page.goto(buy_tickets_url)
             buy_tickets_page.wait_for_load_state("networkidle")
-            buy_tickets_page.wait_for_timeout(300)
+            buy_tickets_page.wait_for_selector("a.day_card")
 
             day_cards = buy_tickets_page.locator("a.day_card")
             assert day_cards.count() > 0
