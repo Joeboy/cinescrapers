@@ -81,18 +81,36 @@ def print_stats() -> None:
         )
         showtimes_month_count = cursor.fetchone()[0]
 
+        # Calculate average films per day by grouping by date
         cursor.execute(
-            "SELECT count(distinct(norm_title)) FROM showtimes WHERE datetime <= ?", (one_months_time,)
+            """
+            SELECT DATE(datetime) as show_date, COUNT(DISTINCT norm_title) as daily_films
+            FROM showtimes
+            WHERE datetime <= ? AND datetime >= ?
+            GROUP BY DATE(datetime)
+        """,
+            (one_months_time, now),
         )
-        showtimes_distinct_count = cursor.fetchone()[0]
+        daily_film_counts = cursor.fetchall()
+
+        if daily_film_counts:
+            avg_films_per_day = sum(count for _, count in daily_film_counts) // len(
+                daily_film_counts
+            )
+        else:
+            avg_films_per_day = 0
 
         cursor.execute("SELECT DISTINCT cinema_shortcode FROM showtimes")
         cinema_shortcodes = [c for (c,) in cursor.fetchall()]
 
-        print(f"Total showtimes: {showtimes_total_count}")
+        print(f"Total showtimes in db: {showtimes_total_count}")
         print(f"Showtimes for the next month: {showtimes_month_count}")
-        print(f"Average number of showtimes per day for the next month: {showtimes_month_count // one_month_num_days}")
-        print(f"Average number of film options per day for the next month: {showtimes_distinct_count // one_month_num_days}")
+        print(
+            f"Average number of showtimes per day for the next month: {showtimes_month_count // one_month_num_days}"
+        )
+        print(
+            f"Average number of films showing per day for the next month: {avg_films_per_day}"
+        )
         print(f"Distinct cinemas: {len(cinema_shortcodes)}")
         print()
 
