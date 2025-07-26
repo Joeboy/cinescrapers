@@ -64,58 +64,77 @@ def get_scraper(scraper_name: str) -> Callable:
 
 def print_stats() -> None:
     """Print some stats about the database."""
-    conn = sqlite3.connect("showtimes.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM showtimes")
-    count = cursor.fetchone()[0]
-    cursor.execute("SELECT DISTINCT cinema_shortcode FROM showtimes")
-    cinema_shortcodes = [c for (c,) in cursor.fetchall()]
+    now = datetime.datetime.now()
+    if now.month == 12:
+        one_months_time = now.replace(year=now.year + 1, month=1)
+    else:
+        one_months_time = now.replace(month=now.month + 1)
+    one_month_num_days = (one_months_time - now).days
 
-    print(f"Total showtimes: {count}")
-    print(f"Distinct cinemas: {len(cinema_shortcodes)}")
-    print()
+    with sqlite3.connect("showtimes.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM showtimes")
+        showtimes_total_count = cursor.fetchone()[0]
 
-    for scraper in get_scrapers():
         cursor.execute(
-            "SELECT COUNT(*), MAX(last_updated) FROM showtimes WHERE scraper = ?",
-            (scraper,),
+            "SELECT COUNT(*) FROM showtimes WHERE datetime <= ?", (one_months_time,)
         )
-        scraper_count, latest_update = cursor.fetchone()
-        if latest_update:
-            latest_update = datetime.datetime.fromisoformat(latest_update)
-        print(scraper)
-        print("-" * len(scraper))
+        showtimes_month_count = cursor.fetchone()[0]
 
-        print(f"Showtimes: {scraper_count}")
-        if latest_update is None:
-            print("No updates found")
-        else:
-            elapsed = datetime.datetime.now() - latest_update
-            print(f"Last updated: {humanize.naturaltime(elapsed)} ago")
+        cursor.execute(
+            "SELECT count(distinct(norm_title)) FROM showtimes WHERE datetime <= ?", (one_months_time,)
+        )
+        showtimes_distinct_count = cursor.fetchone()[0]
+
+        cursor.execute("SELECT DISTINCT cinema_shortcode FROM showtimes")
+        cinema_shortcodes = [c for (c,) in cursor.fetchall()]
+
+        print(f"Total showtimes: {showtimes_total_count}")
+        print(f"Showtimes for the next month: {showtimes_month_count}")
+        print(f"Average number of showtimes per day for the next month: {showtimes_month_count // one_month_num_days}")
+        print(f"Average number of film options per day for the next month: {showtimes_distinct_count // one_month_num_days}")
+        print(f"Distinct cinemas: {len(cinema_shortcodes)}")
         print()
 
-    print("CINEMA DETAILS")
-    print("-" * len("CINEMA DETAILS"))
-    print()
+        for scraper in get_scrapers():
+            cursor.execute(
+                "SELECT COUNT(*), MAX(last_updated) FROM showtimes WHERE scraper = ?",
+                (scraper,),
+            )
+            scraper_count, latest_update = cursor.fetchone()
+            if latest_update:
+                latest_update = datetime.datetime.fromisoformat(latest_update)
+            print(scraper)
+            print("-" * len(scraper))
 
-    with_details = set(cinema_shortcodes) & set(c.shortcode for c in CINEMAS)
-    missing_details = set(cinema_shortcodes) - set(c.shortcode for c in CINEMAS)
+            print(f"Showtimes: {scraper_count}")
+            if latest_update is None:
+                print("No updates found")
+            else:
+                elapsed = datetime.datetime.now() - latest_update
+                print(f"Last updated: {humanize.naturaltime(elapsed)} ago")
+            print()
 
-    print("Cinemas with details:")
-    for shortcode in sorted(with_details):
-        print(f" - {shortcode}")
-    print()
+        print("CINEMA DETAILS")
+        print("-" * len("CINEMA DETAILS"))
+        print()
 
-    if missing_details:
-        print("Cinemas with no details:")
-        for shortcode in missing_details:
+        with_details = set(cinema_shortcodes) & set(c.shortcode for c in CINEMAS)
+        missing_details = set(cinema_shortcodes) - set(c.shortcode for c in CINEMAS)
+
+        print("Cinemas with details:")
+        for shortcode in sorted(with_details):
             print(f" - {shortcode}")
         print()
-    else:
-        print("No cinemas are missing details.")
-    print()
 
-    conn.close()
+        if missing_details:
+            print("Cinemas with no details:")
+            for shortcode in missing_details:
+                print(f" - {shortcode}")
+            print()
+        else:
+            print("No cinemas are missing details.")
+        print()
 
 
 def get_hashed(s: str) -> str:
@@ -373,7 +392,9 @@ def list_films_cmd():
 
 
 @cli.command("refresh")
-@click.option("--scrape-all", "-a", is_flag=True, help="Run all scrapers, even if not stale")
+@click.option(
+    "--scrape-all", "-a", is_flag=True, help="Run all scrapers, even if not stale"
+)
 def refresh_cmd(scrape_all: bool = False):
     """Refresh cinemas without recent updates"""
     t = time.perf_counter()
