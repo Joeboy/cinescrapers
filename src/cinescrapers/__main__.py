@@ -247,6 +247,11 @@ def scrape_to_sqlite(scraper_name: str) -> None:
                 f"Failed to get thumbnail for {showtime.title} {showtime.image_src}, ({scraper_name})"
             )
         showtime.description = showtime.description[:210]
+        if showtime.title == showtime.title.upper():
+            # If title is all caps, that probably means the cinema capilized it, and
+            # it's be better to have it in title case. Unfortunately still misses things
+            # like "THE GODFATHER (40th ANNIVERSARY)"
+            showtime.title = showtime.title.title()
         enriched_showtimes.append(
             EnrichedShowTime(
                 **showtime.model_dump(),
