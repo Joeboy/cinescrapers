@@ -5,7 +5,7 @@ import json
 import sqlite3
 import time
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 import click
 import humanize
@@ -279,7 +279,6 @@ def scrape_to_sqlite(scraper_name: str) -> None:
             print(
                 f"Failed to get thumbnail for {showtime.title} {showtime.image_src}, ({scraper_name})"
             )
-        showtime.description = showtime.description[:210]
         if showtime.title == showtime.title.upper():
             # If title is all caps, that probably means the cinema capilized it, and
             # it's be better to have it in title case. Unfortunately still misses things
@@ -317,7 +316,7 @@ def scrape_to_sqlite(scraper_name: str) -> None:
         cursor.executemany(query, rows)
 
 
-def grab_current_showtimes() -> list[dict[str, Any]]:
+def grab_current_showtimes() -> list[EnrichedShowTime]:
     this_morning = datetime.datetime.combine(
         datetime.datetime.now().date(), datetime.time.min
     )
@@ -325,6 +324,7 @@ def grab_current_showtimes() -> list[dict[str, Any]]:
     three_months_time = this_morning + datetime.timedelta(days=90)
     three_months_time_str = three_months_time.isoformat(timespec="seconds")
     with sqlite3.connect("showtimes.db") as conn:
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -335,12 +335,7 @@ def grab_current_showtimes() -> list[dict[str, Any]]:
         """,
             (this_morning_str, three_months_time_str),
         )
-        columns = [desc[0] for desc in cursor.description]
-        rows = cursor.fetchall()
-
-        data = [dict(zip(columns, row)) for row in rows]
-
-    return data
+        return [EnrichedShowTime(**row) for row in cursor.fetchall()]
 
 
 def export_json() -> None:
@@ -353,11 +348,12 @@ def export_json() -> None:
     assert len(set(cinema_shortcodes)) == len(CINEMAS)
     # Check each showtime has a valid cinema shortcode:
     for s in current_showtimes:
-        assert s["cinema_shortcode"] in cinema_shortcodes
+        assert s.cinema_shortcode in cinema_shortcodes
 
     showtimes_file = Path(__file__).parent / "cinescrapers.json"
+    showtimes_data = [s.model_dump() for s in current_showtimes]
     with showtimes_file.open("w") as f:
-        json.dump(current_showtimes, f)
+        json.dump(showtimes_data, f)
 
     cinemas_data = [c.model_dump() for c in CINEMAS]
     cinemas_file = Path(__file__).parent / "cinemas.json"
