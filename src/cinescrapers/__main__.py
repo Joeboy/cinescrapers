@@ -351,7 +351,7 @@ def export_json() -> None:
         assert s.cinema_shortcode in cinema_shortcodes
 
     showtimes_file = Path(__file__).parent / "cinescrapers.json"
-    showtimes_data = [s.model_dump() for s in current_showtimes]
+    showtimes_data = [s.model_dump(mode="json") for s in current_showtimes]
     with showtimes_file.open("w") as f:
         json.dump(showtimes_data, f)
 

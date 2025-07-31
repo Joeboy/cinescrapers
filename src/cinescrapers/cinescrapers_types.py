@@ -41,6 +41,6 @@ class EnrichedShowTime(ShowTime):
     thumbnail: str | None
 
     def model_dump(self, *args, **kwargs):
-        data = super().model_dump(*args, mode="json", **kwargs)
+        data = super().model_dump(*args, **kwargs)
         data["description"] = data["description"][:210]
         return data
