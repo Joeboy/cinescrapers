@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright, Browser
 from rich import print
 
 from cinescrapers.exceptions import ScrapingError
-from cinescrapers.types import ShowTime
+from cinescrapers.cinescrapers_types import ShowTime
 from cinescrapers.utils import parse_date_without_year
 
 BASE_URL = "https://www.electriccinema.co.uk"

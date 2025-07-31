@@ -2,7 +2,7 @@ from collections import defaultdict
 import dateparser
 from playwright.sync_api import sync_playwright
 
-from cinescrapers.types import ShowTime
+from cinescrapers.cinescrapers_types import ShowTime
 from cinescrapers.exceptions import ScrapingError
 
 CINEMA_NAME = "Prince Charles Cinema"

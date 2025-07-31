@@ -1,4 +1,4 @@
-from cinescrapers.types import Cinema
+from cinescrapers.cinescrapers_types import Cinema
 
 CINEMAS = [
     Cinema(

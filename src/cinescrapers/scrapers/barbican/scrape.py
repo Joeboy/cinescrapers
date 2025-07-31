@@ -1,6 +1,6 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from cinescrapers.types import ShowTime
+from cinescrapers.cinescrapers_types import ShowTime
 from cinescrapers.exceptions import ScrapingError
 from playwright.sync_api import sync_playwright
 from rich import print

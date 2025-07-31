@@ -4,7 +4,7 @@ import dateparser
 from playwright.sync_api import sync_playwright
 from rich import print
 
-from cinescrapers.types import ShowTime
+from cinescrapers.cinescrapers_types import ShowTime
 
 CINEMA_SHORTNAME = "Lumiere Romford"
 CINEMA_NAME = "Lumiere Romford"

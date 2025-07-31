@@ -1,7 +1,5 @@
-import base64
 import concurrent.futures
 import datetime
-import hashlib
 import importlib
 import json
 import sqlite3
@@ -16,11 +14,11 @@ from rich import print
 
 from cinescrapers.cinema_details import CINEMAS
 from cinescrapers.cinemap import generate_cinema_map
+from cinescrapers.cinescrapers_types import EnrichedShowTime, ShowTime
 from cinescrapers.indexnow import submit_to_indexnow
 from cinescrapers.title_normalization import normalize_title
-from cinescrapers.types import EnrichedShowTime, ShowTime
 from cinescrapers.upload import get_s3_client, upload_file
-from cinescrapers.utils import smart_square_thumbnail
+from cinescrapers.utils import get_hashed, smart_square_thumbnail
 
 IMAGES_CACHE = Path(__file__).parent / "scraped_images" / "source_images"
 IMAGES_CACHE.mkdir(parents=True, exist_ok=True)
@@ -155,12 +153,6 @@ def print_stats() -> None:
         print()
 
 
-def get_hashed(s: str) -> str:
-    digest = hashlib.sha256(s.encode("utf-8")).digest()
-    b64 = base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
-    return b64[:32]  # Truncate to sensible length
-
-
 def get_unique_identifier(st: ShowTime) -> str:
     """Build a unique identifier for a showtime"""
     return get_hashed(f"{st.cinema_shortcode}-{st.title}-{st.datetime}")
@@ -169,7 +161,8 @@ def get_unique_identifier(st: ShowTime) -> str:
 def ensure_showtimes_table_exists():
     with sqlite3.connect("showtimes.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS showtimes (
                 id TEXT PRIMARY KEY,
                 cinema_shortcode TEXT NOT NULL,
@@ -183,7 +176,8 @@ def ensure_showtimes_table_exists():
                 last_updated TEXT NOT NULL,
                 scraper TEXT NOT NULL
             )
-        """)
+        """
+        )
 
 
 def get_thumbnail(showtime: ShowTime) -> str | None:
@@ -199,7 +193,9 @@ def get_thumbnail(showtime: ShowTime) -> str | None:
     if not filepath.exists():
         # Add headers to mimic a browser request
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            ),
             "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate, br",

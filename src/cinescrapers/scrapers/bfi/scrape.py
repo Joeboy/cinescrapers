@@ -6,7 +6,7 @@ from pyvirtualdisplay.display import Display
 from rich import print
 
 from cinescrapers.exceptions import ScrapingError
-from cinescrapers.types import ShowTime
+from cinescrapers.cinescrapers_types import ShowTime
 
 CINEMA_SHORTCODE = "BF"
 INDEX_URL = "https://whatson.bfi.org.uk/Online/article/filmsindex"

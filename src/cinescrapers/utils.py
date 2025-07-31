@@ -1,5 +1,7 @@
+import base64
 import datetime
 import functools
+import hashlib
 import re
 from os import PathLike
 
@@ -131,8 +133,14 @@ def extract_uk_postcode(text: str) -> str | None:
     if match:
         postcode = match.group(0)
         # Ensure proper spacing (add space if missing)
-        if ' ' not in postcode:
+        if " " not in postcode:
             # Insert space before the last 3 characters
-            postcode = postcode[:-3] + ' ' + postcode[-3:]
+            postcode = postcode[:-3] + " " + postcode[-3:]
         return postcode
     raise RuntimeError("No valid UK postcode found in the text")
+
+
+def get_hashed(s: str) -> str:
+    digest = hashlib.sha256(s.encode("utf-8")).digest()
+    b64 = base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
+    return b64[:32]  # Truncate to sensible length

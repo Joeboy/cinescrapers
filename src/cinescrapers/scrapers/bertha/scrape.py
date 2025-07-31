@@ -1,5 +1,5 @@
 import dateparser
-from cinescrapers.types import ShowTime
+from cinescrapers.cinescrapers_types import ShowTime
 from playwright.sync_api import sync_playwright
 from rich import print
 

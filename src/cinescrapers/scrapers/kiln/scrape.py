@@ -1,7 +1,7 @@
 import re
 from playwright.sync_api import sync_playwright
 
-from cinescrapers.types import ShowTime
+from cinescrapers.cinescrapers_types import ShowTime
 from cinescrapers.utils import parse_date_without_year
 from rich import print
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from cinescrapers.types import ShowTime
+from cinescrapers.cinescrapers_types import ShowTime
 from playwright.sync_api import sync_playwright
 
 # ── site-specific values (replace) ─────────────────────────────────────────────

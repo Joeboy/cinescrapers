@@ -14,7 +14,7 @@ from playwright.sync_api import sync_playwright
 from rich import print
 
 from cinescrapers.exceptions import EmptyPage, ScrapingError, TooManyRequestsError
-from cinescrapers.types import ShowTime
+from cinescrapers.cinescrapers_types import ShowTime
 
 API_HOST = "film-chase1.p.rapidapi.com"
 API_BASE_URL = f"https://{API_HOST}"
