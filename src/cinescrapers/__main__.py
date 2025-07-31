@@ -341,24 +341,26 @@ def grab_current_showtimes() -> list[EnrichedShowTime]:
 def export_json() -> None:
     """Dump the contents of the db to a json file"""
 
-    current_showtimes = grab_current_showtimes()
-
     cinema_shortcodes = [c.shortcode for c in CINEMAS]
     # Check cinema shortcodes are unique:
     assert len(set(cinema_shortcodes)) == len(CINEMAS)
-    # Check each showtime has a valid cinema shortcode:
-    for s in current_showtimes:
-        assert s.cinema_shortcode in cinema_shortcodes
-
-    showtimes_file = Path(__file__).parent / "cinescrapers.json"
-    showtimes_data = [s.model_dump(mode="json") for s in current_showtimes]
-    with showtimes_file.open("w") as f:
-        json.dump(showtimes_data, f)
 
     cinemas_data = [c.model_dump() for c in CINEMAS]
     cinemas_file = Path(__file__).parent / "cinemas.json"
     with cinemas_file.open("w") as f:
         json.dump(cinemas_data, f)
+
+    current_showtimes = grab_current_showtimes()
+    # Check each showtime has a valid cinema shortcode:
+    showtimes_json = []
+    for showtime in current_showtimes:
+        assert showtime.cinema_shortcode in cinema_shortcodes
+        showtime.description = showtime.description[:210]
+        showtimes_json.append(showtime.model_dump(mode="json"))
+
+    showtimes_file = Path(__file__).parent / "cinescrapers.json"
+    with showtimes_file.open("w") as f:
+        json.dump(showtimes_json, f)
 
 
 @click.group()

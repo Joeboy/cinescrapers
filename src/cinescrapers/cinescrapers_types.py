@@ -39,8 +39,3 @@ class EnrichedShowTime(ShowTime):
     scraper: str
     norm_title: str  # Normalized title for matching / sorting
     thumbnail: str | None
-
-    def model_dump(self, *args, **kwargs):
-        data = super().model_dump(*args, **kwargs)
-        data["description"] = data["description"][:210]
-        return data
