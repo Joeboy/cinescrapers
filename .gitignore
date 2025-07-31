@@ -16,7 +16,8 @@ wheels/
 react_app/my-app/node_modules/
 react_app/my-app/dist/
 
-showtimes.db
+src/showtimes.db
+src/cinescrapers/tmdb_images/*.jpg
 yolov8n.pt
 src/cinescrapers/image_cache/
 tests/thumbnails/test_output_thumbnail.jpg
