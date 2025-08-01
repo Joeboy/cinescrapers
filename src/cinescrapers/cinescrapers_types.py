@@ -25,6 +25,7 @@ class Cinema(BaseModel):
 
 
 class ShowTime(BaseModel):
+    """Showtime data that will be scraped from cinema websites."""
     cinema_shortcode: str
     title: str
     link: str
@@ -34,8 +35,10 @@ class ShowTime(BaseModel):
 
 
 class EnrichedShowTime(ShowTime):
+    """Showtime data that has been enriched with additional information."""
     id: str
     last_updated: datetime.datetime
     scraper: str
     norm_title: str  # Normalized title for matching / sorting
     thumbnail: str | None
+    tmdb_id: int | None = None  # TMDB ID for the film, if available

@@ -15,6 +15,7 @@ from rich import print
 from cinescrapers.cinema_details import CINEMAS
 from cinescrapers.cinemap import generate_cinema_map
 from cinescrapers.cinescrapers_types import EnrichedShowTime, ShowTime
+from cinescrapers.film_identification import get_best_tmdb_match
 from cinescrapers.indexnow import submit_to_indexnow
 from cinescrapers.title_normalization import normalize_title
 from cinescrapers.upload import get_s3_client, upload_file
@@ -24,6 +25,10 @@ IMAGES_CACHE = Path(__file__).parent / "scraped_images" / "source_images"
 IMAGES_CACHE.mkdir(parents=True, exist_ok=True)
 THUMBNAILS_FOLDER = Path(__file__).parent / "scraped_images" / "thumbnails"
 THUMBNAILS_FOLDER.mkdir(parents=True, exist_ok=True)
+TMDB_ID_CACHE = Path(__file__).parent / "tmdb_ids.json"
+if not TMDB_ID_CACHE.exists():
+    # Create the cache file if it doesn't exist
+    TMDB_ID_CACHE.write_text("{}")
 
 # How long since the last update before we need to refresh a cinema's listings
 MAX_STALENESS = datetime.timedelta(days=5)
@@ -193,7 +198,8 @@ def ensure_showtimes_table_exists():
                 image_src TEXT,
                 thumbnail TEXT,
                 last_updated TEXT NOT NULL,
-                scraper TEXT NOT NULL
+                scraper TEXT NOT NULL,
+                tmdb_id INTEGER
             )
         """
         )
@@ -392,6 +398,48 @@ def cli():
 def export_json_cmd():
     """Dump database to JSON"""
     export_json()
+
+
+@cli.command("grab_tmdb_ids")
+def grab_tmdb_ids_cmd():
+    """Grab TMDB IDs for all showtimes"""
+    t1 = time.perf_counter()
+    # TODO: The way the cache works is not great, should cache by
+    # hashed norm_title + description + image fields
+    cache = json.loads(TMDB_ID_CACHE.read_text())
+    with sqlite3.connect("showtimes.db") as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM showtimes")
+        rows = cursor.fetchall()
+        num_showtimes = len(rows)
+        for i, row in enumerate(rows):
+            print(f"{i} of {num_showtimes}, {row['title']}")
+            showtime = EnrichedShowTime(**row)
+            if showtime.tmdb_id:
+                print("Skipping, already has TMDB ID")
+                # The tmdb_id for this db row is already in the db
+                continue
+            if showtime.id in cache.keys():
+                showtime_tmdb_id = cache[showtime.id]
+            else:
+                best_match = get_best_tmdb_match(showtime, IMAGES_CACHE)
+                if best_match:
+                    showtime_tmdb_id = best_match["id"]
+                    cache[showtime.id] = showtime_tmdb_id
+                else:
+                    showtime_tmdb_id = None
+            if showtime_tmdb_id:
+                cursor.execute(
+                    "UPDATE showtimes SET tmdb_id = ? WHERE id = ?",
+                    (showtime_tmdb_id, showtime.id),
+                )
+            if not i % 100:
+                cursor.connection.commit()
+                TMDB_ID_CACHE.write_text(json.dumps(cache, indent=2))
+    print(
+        f"Updated TMDB IDs for all showtimes in {humanize.naturaldelta(time.perf_counter() - t1)}."
+    )
 
 
 @cli.command("list-scrapers")

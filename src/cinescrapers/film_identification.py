@@ -11,6 +11,7 @@ from rich import print
 from sentence_transformers import SentenceTransformer
 
 from cinescrapers.title_normalization import normalize_title
+from cinescrapers.cinescrapers_types import EnrichedShowTime, ShowTime
 
 TMDB_API_KEY = os.environ["TMDB_API_KEY"]
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
@@ -108,17 +109,17 @@ def get_clip_embedding(im: Image.Image) -> torch.Tensor:
 
 
 def get_similarity_score(
-    showtime_data: dict, tmdb_data: dict, images_cache: Path
+    showtime: EnrichedShowTime, tmdb_data: dict, images_cache: Path
 ) -> float:
     """Calculate cosine similarity score between text and image embeddings"""
 
-    description_embedding = get_sentence_embedding(showtime_data["description"])
+    description_embedding = get_sentence_embedding(showtime.description)
     tmdb_overview_embedding = get_sentence_embedding(tmdb_data["overview"])
     overview_similarity = torch.nn.functional.cosine_similarity(
         description_embedding, tmdb_overview_embedding, dim=0
     ).item()
 
-    showtime_image_src = showtime_data["thumbnail"]
+    showtime_image_src = showtime.thumbnail
     showtime_image_embedding = None
     if showtime_image_src:
         image_src_path = images_cache / showtime_image_src
@@ -181,26 +182,28 @@ def get_similarity_score(
             recency_points = 0.05
     print(f"Adding {recency_points} points for recency")
 
-    return (overview_similarity_points + image_similarity_points + recency_points) / 2.05
+    return (
+        overview_similarity_points + image_similarity_points + recency_points
+    ) / 2.05
 
 
-def get_best_tmdb_match(showtime_data: dict, images_cache: Path) -> dict | None:
+def get_best_tmdb_match(showtime: EnrichedShowTime, images_cache: Path) -> dict | None:
     """Find the best TMDB match for a showtime data entry"""
-    tmdb_results = search_tmdb_by_title(showtime_data["norm_title"])
+    tmdb_results = search_tmdb_by_title(showtime.norm_title)
 
+    # Discard any results that don't have a title (which seems to happen)
+    tmdb_results = [r for r in tmdb_results if r["title"].strip()]
+
+    # Let's discard anyhing that isn't an exact title match
     tmdb_results = [
-        r
-        for r in tmdb_results
-        if normalize_title(r["title"]) == showtime_data["norm_title"]
+        r for r in tmdb_results if normalize_title(r["title"]) == showtime.norm_title
     ]
     if len(tmdb_results) == 0:
         return None
     results_with_scores = []
     for tmdb_result in tmdb_results:
-        similarity_score = get_similarity_score(
-            showtime_data, tmdb_result, images_cache
-        )
-        print(f"Similarity score for {showtime_data['norm_title']}: {similarity_score}")
+        similarity_score = get_similarity_score(showtime, tmdb_result, images_cache)
+        print(f"Similarity score for {showtime.norm_title}: {similarity_score}")
         tmdb_result["similarity_score"] = similarity_score
         results_with_scores.append(tmdb_result)
 
