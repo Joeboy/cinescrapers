@@ -98,6 +98,16 @@ def print_stats() -> None:
         else:
             avg_films_per_day = 0
 
+        # Total film count for the next month:
+        cursor.execute(
+            """
+            SELECT COUNT(DISTINCT norm_title) FROM showtimes
+            WHERE datetime >= ? AND datetime < ?
+        """,
+            (now, one_months_time),
+        )
+        total_titles_next_month = cursor.fetchone()[0]
+
         cursor.execute("SELECT DISTINCT cinema_shortcode FROM showtimes")
         cinema_shortcodes = [c for (c,) in cursor.fetchall()]
 
@@ -111,6 +121,15 @@ def print_stats() -> None:
         )
         print(f"Distinct cinemas: {len(cinema_shortcodes)}")
         print()
+
+        tweet_text = (
+            f"Welcome to {datetime.datetime.now().strftime('%B!')}! "
+            f"The filmhose.uk database has {showtimes_month_count} showtimes for this month,"
+            f" averaging about {showtimes_month_count // one_month_num_days} showtimes per day. "
+            f"That's {total_titles_next_month} titles, an average of "
+            f"{avg_films_per_day} different films per day, across {len(cinema_shortcodes)} cinemas."
+        )
+        print(tweet_text)
 
         for scraper in get_scrapers():
             cursor.execute(
