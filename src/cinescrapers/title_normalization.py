@@ -31,11 +31,13 @@ TITLE_REGEXES = [
     r"^Phoenix Classics: *(.*)$",
     r"^Pink Palace: *(.*)$",
     r"^Pitchblack Pictures: *(.*)$",
+    r"^Reborn India Film Presents:? *(.*)$",
     r"^Relaxed Screening: (.*)$",
     r"^Senior Community Screening: (.*)$",
     r"^Seniors' Free Matinee: (.*)$",
     r"^Seniors' Paid Matinee: (.*)$",
     r"^Staff Selects: *(.*)$",
+    r"^UK Premiere:? *(.*)$",
     r"^[a-zA-Z ]+ Film Festival: *(.*)$",
     r"^(.*) *\+ intro by .*$",
     r"^(.*) *\(UK Theatrical Premiere\)$",
@@ -68,6 +70,14 @@ TITLE_REGEXES = [
     r"^(.*) \[\d\dth anniversary\]$",
     r"^(.*) *- *\d\dth anniversary$",
     r"^(.*) *\(Subtitled\) *$",
+    r"^(.*) *\[Subtitled\] *$",
+    r"^(.*) *\[English Subtitles\] *$",
+    r"^(.*) *\(English Subtitles\) *$",
+    r"^(.*) *\[SUBBED\] *$",
+    r"^(.*) *\[DUBBED\] *$",
+    r"^(.*) *\(DUBBED\) *$",
+    r"^(.*) *\[English language dub\] *$",
+    r"^(.*) *\[Original [a-zA-Z ]+ version\] *$",
     r"^(.*) *\(2D\) *$",
     r"^(.*) *\[2D\] *$",
     r"^(.*) *\(3D\) *$",
@@ -134,22 +144,33 @@ def normalize_accents(text: str) -> str:
     return ascii_text
 
 
+def run_regexes(title: str) -> str:
+    """Run the title through the regexes to extract the normalized title."""
+    for regex in TITLE_REGEXES:
+        match = re.match(regex, title, re.I)
+        if match:
+            return match.group(1).strip()
+    raise RuntimeError(
+        "We shouldn't ever get here as the last regex should match anything."
+    )
+
+
 def normalize_title(title: str) -> str:
     title = title.strip().upper()
     title = normalize_quotes(title)
     title = normalize_dashes(title)
     title = normalize_accents(title)
 
-    for regex in TITLE_REGEXES:
-        match = re.match(regex, title, re.I)
-        if match:
-            title = match.group(1)
-            title = PUNC_REGEX.sub(" ", title)
-            title = AMP_REGEX.sub(" AND ", title)
-            title = re.sub(r"\s+", " ", title)
-            title = title.strip()
-            assert title
-            return title
+    title = run_regexes(title)
+    # Run regexes a second time in case the title has both a prefix and a suffix
+    title = run_regexes(title)
+    if title:
+        title = PUNC_REGEX.sub(" ", title)
+        title = AMP_REGEX.sub(" AND ", title)
+        title = re.sub(r"\s+", " ", title)
+        title = title.strip()
+        assert title
+        return title
     raise RuntimeError(
         "We shouldn't ever get here as the last regex should match anything."
     )
