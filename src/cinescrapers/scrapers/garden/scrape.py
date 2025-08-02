@@ -1,10 +1,10 @@
 import datetime
+import re
 
 import dateparser
 from cinescrapers.cinescrapers_types import ShowTime
 from playwright.sync_api import sync_playwright
 from rich import print
-
 
 CINEMA_SHORTNAME = "Garden Cinema"
 CINEMA_NAME = "The Garden Cinema"
@@ -44,6 +44,20 @@ def scrape() -> list[ShowTime]:
                 "content"
             )
 
+            stats_text = film_page.locator(".film-detail__film__stats").text_content()
+            assert stats_text
+            RELEASE_YEAR_RE = re.compile(
+                r"^.*, +(?P<year>(19\d{2})|(20[0-2]\d)),.*$", re.DOTALL
+            )
+            match = RELEASE_YEAR_RE.match(stats_text)
+            if match:
+                release_year = int(match.group("year"))
+            else:
+                print(
+                    f"Failed to extract release year from: {stats_text} (link: {link})"
+                )
+                release_year = None
+
             screenings_e = film_page.locator(".film-detail__screenings").first
             screenings_es = screenings_e.locator(".screening-panel")
             for j in range(screenings_es.count()):
@@ -73,6 +87,7 @@ def scrape() -> list[ShowTime]:
                     datetime=date_time,
                     description=description,
                     image_src=img_src,
+                    release_year=release_year,
                 )
                 # print(showtime_data)
                 showtimes.append(showtime_data)
