@@ -15,24 +15,19 @@ from rich import print
 from cinescrapers.cinema_details import CINEMAS
 from cinescrapers.cinemap import generate_cinema_map
 from cinescrapers.cinescrapers_types import EnrichedShowTime, ShowTime
+from cinescrapers.config import (
+    IMAGES_CACHE,
+    MAX_STALENESS,
+    THUMBNAILS_FOLDER,
+    TMDB_ID_CACHE,
+)
 from cinescrapers.film_identification import get_best_tmdb_match
 from cinescrapers.indexnow import submit_to_indexnow
+from cinescrapers.sitemap import generate_sitemap
 from cinescrapers.thumbnailing import smart_square_thumbnail
 from cinescrapers.title_normalization import normalize_title
 from cinescrapers.upload import get_s3_client, upload_file
 from cinescrapers.utils import get_hashed
-
-IMAGES_CACHE = Path(__file__).parent / "scraped_images" / "source_images"
-IMAGES_CACHE.mkdir(parents=True, exist_ok=True)
-THUMBNAILS_FOLDER = Path(__file__).parent / "scraped_images" / "thumbnails"
-THUMBNAILS_FOLDER.mkdir(parents=True, exist_ok=True)
-TMDB_ID_CACHE = Path(__file__).parent / "tmdb_id_cache.json"
-if not TMDB_ID_CACHE.exists():
-    # Create the cache file if it doesn't exist
-    TMDB_ID_CACHE.write_text("{}")
-
-# How long since the last update before we need to refresh a cinema's listings
-MAX_STALENESS = datetime.timedelta(days=5)
 
 
 def get_scrapers() -> list[str]:
@@ -459,7 +454,9 @@ def grab_tmdb_ids_cmd():
                     showtime_tmdb_id = None
             if showtime_tmdb_id:
                 num_found += 1
-                print(f"Found TMDB https://www.themoviedb.org/movie/{showtime_tmdb_id} for {showtime.norm_title}")
+                print(
+                    f"Found TMDB https://www.themoviedb.org/movie/{showtime_tmdb_id} for {showtime.norm_title}"
+                )
                 cursor.execute(
                     "UPDATE showtimes SET tmdb_id = ? WHERE id = ?",
                     (showtime_tmdb_id, showtime.id),
@@ -620,38 +617,6 @@ def upload():
 def generate_map_cmd():
     """Generate an interactive map of all cinemas"""
     generate_cinema_map()
-
-
-def generate_sitemap():
-    """Generate a sitemap.xml file"""
-    output_path = Path(__file__).parent / "sitemap.xml"
-    template_path = Path(__file__).parent / "sitemap.xml.template"
-    template = template_path.read_text()
-
-    cinema_page_sitemaps = "\n".join(
-        f"""
-    <url>
-        <loc>https://filmhose.uk/cinemas/{cinema.shortname}</loc>
-        <lastmod><!-- TODAY --></lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.6</priority>
-    </url>
-
-    <url>
-        <loc>https://filmhose.uk/cinema-listings/{cinema.shortcode}</loc>
-        <lastmod><!-- TODAY --></lastmod>
-        <changefreq>daily</changefreq>
-        <priority>0.6</priority>
-    </url>
-"""
-        for cinema in CINEMAS
-    )
-    sitemap_content = template.replace("<!-- CINEMA PAGES -->", cinema_page_sitemaps)
-    sitemap_content = template.replace(
-        "<!-- CINEMA PAGES -->", cinema_page_sitemaps
-    ).replace("<!-- TODAY -->", datetime.datetime.now().date().isoformat())
-    output_path.write_text(sitemap_content)
-    print(f"Sitemap generated at {output_path}")
 
 
 @cli.command("generate-sitemap")
