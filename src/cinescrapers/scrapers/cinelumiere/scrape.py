@@ -1,9 +1,11 @@
-from datetime import datetime
 import re
-from cinescrapers.cinescrapers_types import ShowTime
-from cinescrapers.exceptions import ScrapingError
+from datetime import datetime
+
 from playwright.sync_api import sync_playwright
 from rich import print
+
+from cinescrapers.cinescrapers_types import ShowTime
+from cinescrapers.exceptions import ScrapingError
 
 CINEMA_SHORTCODE = "CL"
 CINEMA_NAME = "Ciné Lumière"
@@ -11,6 +13,9 @@ BASE_URL = "https://www.institut-francais.org.uk"
 URL = f"{BASE_URL}/whats-on/?type=72&period=any&location=onsite#/"
 
 DATE_RE = re.compile(r".*(\d\d\.\d\d\.\d\d)$")
+RELEASE_YEAR_RE = re.compile(
+    r"^.*\| *\b(?P<year>(19\d{2})|(20[0-2]\d))\b.*$", re.DOTALL
+)
 
 
 def scrape() -> list[ShowTime]:
@@ -81,15 +86,12 @@ def scrape() -> list[ShowTime]:
                 assert text
                 text = text.strip()
                 if text.startswith("Country, year:"):
-                    RELEASE_YEAR_RE = re.compile(
-                        r"^.*\| *\b(?P<year>(19\d{2})|(20[0-2]\d))\b.*$", re.DOTALL
-                    )
-                    match = RELEASE_YEAR_RE.search(text)
+                    match = RELEASE_YEAR_RE.match(text)
                     if match:
                         release_year = int(match.group("year"))
                         break
             if release_year is None:
-                print(f"Failed to find release year in metadata for {title}")
+                print(f"Failed to find release year for {title}")
 
             showtime_table = film_page.locator("table")
             if showtime_table.count() == 0:
@@ -121,6 +123,7 @@ def scrape() -> list[ShowTime]:
                     datetime=date_and_time,
                     description=description,
                     image_src=image_src,
+                    release_year=release_year,
                 )
                 showtimes.append(showtime_data)
 
