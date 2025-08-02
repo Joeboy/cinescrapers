@@ -21,7 +21,7 @@ from cinescrapers.config import (
     THUMBNAILS_FOLDER,
     TMDB_ID_CACHE,
 )
-from cinescrapers.film_identification import get_best_tmdb_match
+from cinescrapers.tmdb_utils import get_best_tmdb_match
 from cinescrapers.indexnow import submit_to_indexnow
 from cinescrapers.sitemap import generate_sitemap
 from cinescrapers.thumbnailing import smart_square_thumbnail
