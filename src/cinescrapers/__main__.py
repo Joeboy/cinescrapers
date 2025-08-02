@@ -459,7 +459,7 @@ def grab_tmdb_ids_cmd():
                     showtime_tmdb_id = None
             if showtime_tmdb_id:
                 num_found += 1
-                print(f"Found TMDB ID: {showtime_tmdb_id} for {showtime.norm_title}")
+                print(f"Found TMDB https://www.themoviedb.org/movie/{showtime_tmdb_id} for {showtime.norm_title}")
                 cursor.execute(
                     "UPDATE showtimes SET tmdb_id = ? WHERE id = ?",
                     (showtime_tmdb_id, showtime.id),

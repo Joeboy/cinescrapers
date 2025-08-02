@@ -109,7 +109,9 @@ def get_clip_embedding(im: Image.Image) -> torch.Tensor:
 
 
 def get_similarity_score(
-    showtime: EnrichedShowTime, tmdb_data: dict, images_cache: Path
+    showtime: EnrichedShowTime,
+    tmdb_data: dict,
+    images_cache: Path,
 ) -> float:
     """Calculate cosine similarity score between text and image embeddings"""
 
@@ -182,9 +184,16 @@ def get_similarity_score(
             recency_points = 0.1
     print(f"Adding {recency_points} points for recency")
 
+    vote_count = tmdb_data["vote_count"]
+    vote_count_points = 0.1 * (vote_count > 100)
+    print(f"Adding {vote_count_points} points for vote count")
+
     return (
-        overview_similarity_points + image_similarity_points + recency_points
-    ) / 2.05
+        overview_similarity_points
+        + image_similarity_points
+        + recency_points
+        + vote_count_points
+    )
 
 
 def get_best_tmdb_match(showtime: EnrichedShowTime, images_cache: Path) -> dict | None:
