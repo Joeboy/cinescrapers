@@ -32,6 +32,7 @@ class ShowTime(BaseModel):
     datetime: datetime.datetime
     description: str
     image_src: str | None
+    release_year: int | None = None
 
 
 class EnrichedShowTime(ShowTime):
