@@ -25,7 +25,7 @@ IMAGES_CACHE = Path(__file__).parent / "scraped_images" / "source_images"
 IMAGES_CACHE.mkdir(parents=True, exist_ok=True)
 THUMBNAILS_FOLDER = Path(__file__).parent / "scraped_images" / "thumbnails"
 THUMBNAILS_FOLDER.mkdir(parents=True, exist_ok=True)
-TMDB_ID_CACHE = Path(__file__).parent / "tmdb_ids.json"
+TMDB_ID_CACHE = Path(__file__).parent / "tmdb_id_cache.json"
 if not TMDB_ID_CACHE.exists():
     # Create the cache file if it doesn't exist
     TMDB_ID_CACHE.write_text("{}")
@@ -404,9 +404,7 @@ def export_json_cmd():
 def grab_tmdb_ids_cmd():
     """Grab TMDB IDs for all showtimes"""
     t1 = time.perf_counter()
-    # TODO: The way the cache works is not great, should cache by
-    # hashed norm_title + description + image fields
-    cache = json.loads(TMDB_ID_CACHE.read_text())
+    tmdb_id_cache = json.loads(TMDB_ID_CACHE.read_text())
     with sqlite3.connect("showtimes.db") as conn:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -416,27 +414,45 @@ def grab_tmdb_ids_cmd():
         for i, row in enumerate(rows):
             print(f"{i} of {num_showtimes}, {row['title']}")
             showtime = EnrichedShowTime(**row)
+
+            # I think we can assume that movie listings with the same
+            # norm_title, description and image are pretty definitely for the
+            # same movie
+            movie_id_str = (
+                f"{showtime.norm_title}-{showtime.description}-{showtime.image_src}"
+            )
+            movie_hash = get_hashed(movie_id_str)
+            print(f"{showtime.norm_title} -> {movie_hash}")
+
             if showtime.tmdb_id:
-                print("Skipping, already has TMDB ID")
+                print("Skipping, db already has TMDB ID")
                 # The tmdb_id for this db row is already in the db
                 continue
-            if showtime.id in cache.keys():
-                showtime_tmdb_id = cache[showtime.id]
+            if movie_hash in tmdb_id_cache.keys():
+                print(f"'{showtime.norm_title}' Found in file cache")
+                showtime_tmdb_id = tmdb_id_cache[movie_hash]
             else:
+                print(f"'{showtime.norm_title}' Not found in file cache, searching TMDB")
                 best_match = get_best_tmdb_match(showtime, IMAGES_CACHE)
                 if best_match:
                     showtime_tmdb_id = best_match["id"]
-                    cache[showtime.id] = showtime_tmdb_id
                 else:
                     showtime_tmdb_id = None
             if showtime_tmdb_id:
+                print(f"Found TMDB ID: {showtime_tmdb_id} for {showtime.norm_title}")
                 cursor.execute(
                     "UPDATE showtimes SET tmdb_id = ? WHERE id = ?",
                     (showtime_tmdb_id, showtime.id),
                 )
+                tmdb_id_cache[movie_hash] = showtime_tmdb_id
+
             if not i % 100:
                 cursor.connection.commit()
-                TMDB_ID_CACHE.write_text(json.dumps(cache, indent=2))
+                print("writing file cache")
+                TMDB_ID_CACHE.write_text(json.dumps(tmdb_id_cache, indent=2))
+
+        TMDB_ID_CACHE.write_text(json.dumps(tmdb_id_cache, indent=2))
+        cursor.connection.commit()
     print(
         f"Updated TMDB IDs for all showtimes in {humanize.naturaldelta(time.perf_counter() - t1)}."
     )
