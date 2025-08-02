@@ -1,5 +1,6 @@
 import datetime
 import re
+
 import dateparser
 from playwright.sync_api import sync_playwright
 from rich import print
@@ -13,6 +14,7 @@ BASE_URL = "https://www.lumiereromford.com"
 URL = f"{BASE_URL}"
 
 DATE_RE = re.compile(r".*/showtimes/(?P<date>20\d\d-[01]\d-[0123]\d)\?.*")
+RELEASE_DATE_RE = re.compile(r"^[0123]\d-[01]\d-(?P<year>(19\d{2})|(20[0-2]\d))$")
 
 
 def scrape() -> list[ShowTime]:
@@ -61,6 +63,19 @@ def scrape() -> list[ShowTime]:
                 "content"
             )
             assert image_src
+
+            # It looks like the current year is given "by default", so it's
+            # possible that'll confuse the tmdb lookups in some cases. For now
+            # I'll just leave it as is.
+            subsectiondesc_es = info_page.locator(".subsectiondesc").all_inner_texts()
+            for subsectiondesc_e in subsectiondesc_es:
+                m = RELEASE_DATE_RE.match(subsectiondesc_e)
+                if m:
+                    release_year = int(m.group("year"))
+                    break
+            else:
+                release_year = None
+
             info_page.close()
 
             buy_tickets_url = buy_tickets_a.get_attribute("href")
@@ -100,6 +115,7 @@ def scrape() -> list[ShowTime]:
                         datetime=date_time,
                         description=description,
                         image_src=image_src,
+                        release_year=release_year,
                     )
                     showtimes.append(showtime_data)
 
