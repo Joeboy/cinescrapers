@@ -389,7 +389,14 @@ def export_json() -> None:
     for showtime in current_showtimes:
         assert showtime.cinema_shortcode in cinema_shortcodes
         showtime.description = showtime.description[:210]
-        showtimes_json.append(showtime.model_dump(mode="json"))
+        j = showtime.model_dump(mode="json")
+        # Remove some stuff we don't need in the JSON export:
+        del j["image_src"]
+        del j["release_year"]
+        del j["last_updated"]
+        del j["scraper"]
+
+        showtimes_json.append(j)
 
     showtimes_file = Path(__file__).parent / "cinescrapers.json"
     with showtimes_file.open("w") as f:

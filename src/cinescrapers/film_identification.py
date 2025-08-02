@@ -179,7 +179,7 @@ def get_similarity_score(
         release_year = int(release_date.split("-")[0])
         if release_year >= last_year:
             # If it's a recent film, that makes it more likely to be showing
-            recency_points = 0.05
+            recency_points = 0.1
     print(f"Adding {recency_points} points for recency")
 
     return (
