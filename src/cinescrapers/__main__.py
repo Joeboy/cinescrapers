@@ -20,8 +20,14 @@ from cinescrapers.config import (
     MAX_STALENESS,
     THUMBNAILS_FOLDER,
     TMDB_ID_CACHE,
+    TMDB_RECOMMENDATIONS_CACHE,
+    TMDB_RECOMMENDATIONS_FILTERED,
 )
-from cinescrapers.tmdb_utils import get_best_tmdb_match
+from cinescrapers.tmdb_utils import (
+    get_all_tmdb_recommendations,
+    get_best_tmdb_match,
+    get_tmdb_recommendations,
+)
 from cinescrapers.indexnow import submit_to_indexnow
 from cinescrapers.sitemap import generate_sitemap
 from cinescrapers.thumbnailing import smart_square_thumbnail
@@ -375,8 +381,10 @@ def export_json() -> None:
 
     cinemas_data = [c.model_dump() for c in CINEMAS]
     cinemas_file = Path(__file__).parent / "cinemas.json"
-    with cinemas_file.open("w") as f:
-        json.dump(cinemas_data, f)
+    cinemas_file.write_text(json.dumps(cinemas_data))
+
+    recommendations = get_all_tmdb_recommendations()
+    TMDB_RECOMMENDATIONS_FILTERED.write_text(json.dumps(recommendations))
 
     current_showtimes = grab_current_showtimes()
     # Check each showtime has a valid cinema shortcode:
@@ -574,6 +582,7 @@ def upload():
     assert cinescrapers_json_path.exists()
     assert sitemap_xml_path.exists()
     assert map_html_path.exists()
+    assert TMDB_RECOMMENDATIONS_FILTERED.exists()
 
     upload_file(
         s3_client,
@@ -594,6 +603,9 @@ def upload():
         s3_client,
         map_html_path,
         map_html_path.name,
+    )
+    upload_file(
+        s3_client, TMDB_RECOMMENDATIONS_FILTERED, TMDB_RECOMMENDATIONS_FILTERED.name
     )
 
     # One day, it might be better to only upload the thumbnails for

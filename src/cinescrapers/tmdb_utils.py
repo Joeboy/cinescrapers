@@ -1,5 +1,7 @@
 import datetime
+import json
 import os
+import sqlite3
 from io import BytesIO
 from pathlib import Path
 
@@ -11,6 +13,7 @@ from rich import print
 from sentence_transformers import SentenceTransformer
 
 from cinescrapers.cinescrapers_types import EnrichedShowTime
+from cinescrapers.config import TMDB_RECOMMENDATIONS_CACHE
 from cinescrapers.title_normalization import normalize_title
 
 TMDB_API_KEY = os.environ["TMDB_API_KEY"]
@@ -78,6 +81,47 @@ def get_tmdb_movie_details(tmdb_id) -> dict:
     response = requests.get(details_url, params=params)
     response.raise_for_status()
     return response.json()
+
+
+def get_tmdb_recommendations(tmdb_id: int) -> list[dict]:
+    """Get movie recommendations from TMDB for a specified movie ID"""
+    recommendations_url = f"{TMDB_BASE_URL}/movie/{tmdb_id}/recommendations"
+    params = {"api_key": TMDB_API_KEY}
+
+    response = requests.get(recommendations_url, params=params)
+    if response.status_code == 404:
+        print(f"No recommendations found for TMDB ID {tmdb_id}")
+        return []
+    response.raise_for_status()
+    return response.json().get("results", [])
+
+
+def get_all_tmdb_recommendations():
+    """Get tmdb recommendations for all TMDB IDs in the database"""
+    cache = json.loads(TMDB_RECOMMENDATIONS_CACHE.read_text())
+    with sqlite3.connect("showtimes.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT DISTINCT tmdb_id FROM showtimes WHERE tmdb_id IS NOT NULL"
+        )
+        tmdb_ids = [row[0] for row in cursor.fetchall()]
+    tmdb_id_count = len(tmdb_ids)
+    for i, tmdb_id in enumerate(tmdb_ids):
+        if str(tmdb_id) in cache.keys():
+            continue
+        print(
+            f"Fetching recommendations for TMDB ID {tmdb_id} ({i + 1}/{tmdb_id_count})"
+        )
+        recommendations = get_tmdb_recommendations(tmdb_id)
+        cache[str(tmdb_id)] = [r["id"] for r in recommendations]
+
+    TMDB_RECOMMENDATIONS_CACHE.write_text(json.dumps(cache))
+
+    # So that gets us all of the recommendations for all TMDB IDs in the db.
+    # But, we only care about recommendations if we have them in our showtimes db
+    recommendations = {k: set(v) & set(tmdb_ids) for k, v in cache.items()}
+    recommendations = {k: list(v) for k, v in recommendations.items() if v}
+    return recommendations
 
 
 def get_similarity_model():
