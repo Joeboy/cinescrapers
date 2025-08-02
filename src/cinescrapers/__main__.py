@@ -292,6 +292,11 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     """Run a scraper and insert the results into an sqlite db"""
     t = time.perf_counter()
     scraper = get_scraper(scraper_name)
+    with sqlite3.connect("showtimes.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("""DELETE FROM showtimes WHERE scraper = ?""", (scraper_name,))
+        print("Deleted old showtimes for scraper:", scraper_name)
+
     showtimes = scraper()
     elapsed = time.perf_counter() - t
     print(
