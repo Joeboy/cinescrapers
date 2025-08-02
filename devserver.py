@@ -30,6 +30,16 @@ def serve_cinemas():
     return response
 
 
+@app.route("/tmdb_recommendations.json")
+def serve_tmdb_recommendations():
+    path = Path(__file__).parent / "src" / "cinescrapers" / "data" / "tmdb_recommendations.json"
+    response = send_file(path, mimetype="application/json")
+    response.headers["Content-Type"] = "application/json"
+    # response.headers["Content-Encoding"] = "gzip"
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
+
 @app.route("/thumbnails/<path:filename>")
 def serve_thumbnail(filename):
     return send_from_directory(THUMBNAILS_DIR, filename)

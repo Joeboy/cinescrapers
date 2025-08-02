@@ -2,6 +2,10 @@ import datetime
 from pathlib import Path
 
 CACHE_FOLDER = Path(__file__).parent / "cache"
+DATA_FOLDER = Path(__file__).parent / "data"
+CACHE_FOLDER.mkdir(parents=True, exist_ok=True)
+DATA_FOLDER.mkdir(parents=True, exist_ok=True)
+
 TMDB_ID_CACHE = CACHE_FOLDER / "tmdb_id_cache.json"
 if not TMDB_ID_CACHE.exists():
     # Create the cache file if it doesn't exist
@@ -9,7 +13,7 @@ if not TMDB_ID_CACHE.exists():
 TMDB_RECOMMENDATIONS_CACHE = CACHE_FOLDER / "tmdb_recommendations_raw.json"
 if not TMDB_RECOMMENDATIONS_CACHE.exists():
     TMDB_RECOMMENDATIONS_CACHE.write_text("{}")
-TMDB_RECOMMENDATIONS_FILTERED = CACHE_FOLDER / "tmdb_recommendations.json"
+TMDB_RECOMMENDATIONS_FILTERED = DATA_FOLDER / "tmdb_recommendations.json"
 
 
 # TODO: Move images and thumbnails into CACHE_FOLDER
