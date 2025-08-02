@@ -37,6 +37,7 @@ def scrape() -> list[ShowTime]:
             movie_card = movie_cards.nth(i)
 
             # We have to get the description and showtimes from separate pages
+            page.wait_for_selector(".action-wrap")
             action_wrap_e = movie_card.locator(".action-wrap")
             assert action_wrap_e.count() == 1
             more_info_a = action_wrap_e.locator(":scope > a.is-secondary-small")

@@ -1,8 +1,8 @@
 import dateparser
-from cinescrapers.cinescrapers_types import ShowTime
 from playwright.sync_api import sync_playwright
 from rich import print
 
+from cinescrapers.cinescrapers_types import ShowTime
 
 CINEMA_SHORTNAME = "Bertha DocHouse"
 CINEMA_SHORTCODE = "BR"
@@ -63,6 +63,8 @@ def scrape() -> list[ShowTime]:
                     time_e = event_date_e.locator(".time")
                     assert time_e.count() == 1
                     time_str = time_e.inner_text().strip()
+                    if time_str.strip().upper() == "SOLD OUT":
+                        continue
                     date_time_str = f"{date_str} {time_str}"
                     date_time = dateparser.parse(date_time_str)
                     assert date_time
