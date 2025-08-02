@@ -5,7 +5,6 @@ from cinescrapers.exceptions import ScrapingError
 from playwright.sync_api import sync_playwright
 from rich import print
 
-
 CINEMA_SHORTCODE = "CL"
 CINEMA_NAME = "Ciné Lumière"
 BASE_URL = "https://www.institut-francais.org.uk"
@@ -71,6 +70,27 @@ def scrape() -> list[ShowTime]:
             )
             assert image_src
 
+            metadata_e = film_page.locator("ul.metadata")
+            assert metadata_e.count() == 1
+            metadata_items = metadata_e.locator("li")
+
+            release_year = None
+            for j in range(metadata_items.count()):
+                item = metadata_items.nth(j)
+                text = item.text_content()
+                assert text
+                text = text.strip()
+                if text.startswith("Country, year:"):
+                    RELEASE_YEAR_RE = re.compile(
+                        r"^.*\| *\b(?P<year>(19\d{2})|(20[0-2]\d))\b.*$", re.DOTALL
+                    )
+                    match = RELEASE_YEAR_RE.search(text)
+                    if match:
+                        release_year = int(match.group("year"))
+                        break
+            if release_year is None:
+                print(f"Failed to find release year in metadata for {title}")
+
             showtime_table = film_page.locator("table")
             if showtime_table.count() == 0:
                 # There's no showtime table, so we have to get the date
@@ -93,7 +113,6 @@ def scrape() -> list[ShowTime]:
                 # Combine date and time
                 date_and_time_str = f"{date_str} {time_str}"
                 date_and_time = datetime.fromisoformat(date_and_time_str)
-
 
                 showtime_data = ShowTime(
                     cinema_shortcode=CINEMA_SHORTCODE,
@@ -133,6 +152,7 @@ def scrape() -> list[ShowTime]:
                         datetime=date_and_time,
                         description=description,
                         image_src=image_src,
+                        release_year=release_year,
                     )
                     showtimes.append(showtime_data)
             else:
