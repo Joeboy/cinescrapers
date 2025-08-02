@@ -64,8 +64,8 @@ def search_tmdb_by_title(title, year: int | None = None) -> list[dict]:
         response.raise_for_status()
         response_data = response.json()
         if response_data["results"]:
-            print(f"Found {len(response_data['results'])} results on page {page}")
             results.extend(response_data["results"])
+    print(f"Found {len(results)} results for {title} (year: {year})")
 
     return results
 

@@ -65,6 +65,7 @@ TITLE_REGEXES = [
     r"^(.*) *plus director Q&A\b.*$",
     r"^(.*) *\+ Live Organ$",
     r"^(.*) \d\dth anniversary$",
+    r"^(.*) \d\dth anniversary edition$",
     r"^(.*) \(\d\dth anniversary\)$",
     r"^(.*) \(\d\d\dth anniversary\)$",
     r"^(.*) \(\d\dth anniversary 4K Restoration\)$",
@@ -84,6 +85,8 @@ TITLE_REGEXES = [
     r"^(.*) *\(3D\) *$",
     r"^(.*) *\[3D\] *$",
     r"^(.*) *Classics Presented in 35mm$",
+    r"^(.*) *\(IMAX\)",
+    r"^(.*) *\[IMAX\]",
     r"^(.*) *- *The Chiswick Cinema$",
     r"^(.*)$",
 ]
