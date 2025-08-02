@@ -10,6 +10,9 @@ import dateparser
 import numpy as np
 from PIL import Image
 
+# Regular expression matching 1900-1999 or 2000-2029
+RELEASE_YEAR_RE = re.compile(r"\b((19\d{2})|(20[0-2]\d))\b")
+
 
 class DateParsingError(Exception):
     pass

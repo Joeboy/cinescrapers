@@ -4,6 +4,8 @@ from playwright.sync_api import sync_playwright
 
 from cinescrapers.cinescrapers_types import ShowTime
 from cinescrapers.exceptions import ScrapingError
+from cinescrapers.utils import RELEASE_YEAR_RE
+from rich import print
 
 CINEMA_NAME = "Prince Charles Cinema"
 CINEMA_SHORTNAME = "PCC"
@@ -29,9 +31,22 @@ def scrape() -> list[ShowTime]:
 
             a = fd.locator("a.liveeventtitle")
             title = a.inner_text()
+            assert title
+
             link = a.get_attribute("href")
             if link is None:
                 raise ScrapingError(f"Could not get link for {title}")
+
+            # There's an oddly-named "running-time" div, that also contains the release year
+            # and other stuff
+            running_time_div = fd.locator("div.running-time")
+            assert running_time_div.count() == 1
+            release_year = running_time_div.locator("span").first.inner_text()
+
+            if RELEASE_YEAR_RE.match(release_year):
+                release_year = int(release_year)
+            else:
+                release_year = None
 
             desc_paras = fd.locator("div.jacro-formatted-text p").all_inner_texts()
             description = "".join(desc_paras)
@@ -73,10 +88,13 @@ def scrape() -> list[ShowTime]:
                         datetime=date_and_time,
                         description=description,
                         image_src=img_src,
+                        release_year=release_year,
                     )
                     showtimes.append(showtime_data)
 
         page.close()
         browser.close()
 
+    print(showtimes)
+    xxx
     return showtimes
