@@ -17,9 +17,10 @@ from cinescrapers.cinemap import generate_cinema_map
 from cinescrapers.cinescrapers_types import EnrichedShowTime, ShowTime
 from cinescrapers.film_identification import get_best_tmdb_match
 from cinescrapers.indexnow import submit_to_indexnow
+from cinescrapers.thumbnailing import smart_square_thumbnail
 from cinescrapers.title_normalization import normalize_title
 from cinescrapers.upload import get_s3_client, upload_file
-from cinescrapers.utils import get_hashed, smart_square_thumbnail
+from cinescrapers.utils import get_hashed
 
 IMAGES_CACHE = Path(__file__).parent / "scraped_images" / "source_images"
 IMAGES_CACHE.mkdir(parents=True, exist_ok=True)
@@ -434,7 +435,9 @@ def grab_tmdb_ids_cmd():
                 print(f"'{showtime.norm_title}' Found in file cache")
                 showtime_tmdb_id = tmdb_id_cache[movie_hash]
             else:
-                print(f"'{showtime.norm_title}' Not found in file cache, searching TMDB")
+                print(
+                    f"'{showtime.norm_title}' Not found in file cache, searching TMDB"
+                )
                 best_match = get_best_tmdb_match(showtime, IMAGES_CACHE)
                 if best_match:
                     showtime_tmdb_id = best_match["id"]

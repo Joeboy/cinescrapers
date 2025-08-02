@@ -10,8 +10,8 @@ from PIL import Image
 from rich import print
 from sentence_transformers import SentenceTransformer
 
+from cinescrapers.cinescrapers_types import EnrichedShowTime
 from cinescrapers.title_normalization import normalize_title
-from cinescrapers.cinescrapers_types import EnrichedShowTime, ShowTime
 
 TMDB_API_KEY = os.environ["TMDB_API_KEY"]
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
