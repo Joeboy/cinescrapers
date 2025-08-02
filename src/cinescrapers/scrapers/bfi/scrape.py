@@ -1,15 +1,18 @@
 import asyncio
+import re
+
 import dateparser
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import async_playwright
 from pyvirtualdisplay.display import Display
 from rich import print
 
-from cinescrapers.exceptions import ScrapingError
 from cinescrapers.cinescrapers_types import ShowTime
+from cinescrapers.exceptions import ScrapingError
 
 CINEMA_SHORTCODE = "BF"
 INDEX_URL = "https://whatson.bfi.org.uk/Online/article/filmsindex"
+RELEASE_YEAR_RE = re.compile(r"^[a-zA-Z -]+ (?P<year>(19\d\d)|2[012]\d\d)\..*$")
 
 
 async def process_film(
@@ -57,6 +60,19 @@ async def process_film(
             if not img_src.startswith("http"):
                 img_src = f"https://whatson.bfi.org.uk{img_src}"
 
+            film_infos = await film_page.locator(
+                "p.Film-info__information__value"
+            ).all_inner_texts()
+
+            for info in film_infos:
+                match = RELEASE_YEAR_RE.match(info)
+                if match:
+                    release_year = int(match.group("year"))
+                    break
+            else:
+                release_year = None
+                print(f"Could not find release year in {film_infos}")
+
             showtimes = []
             for listing in listings:
                 date_and_time = dateparser.parse(listing["start_date"])
@@ -70,6 +86,7 @@ async def process_film(
                     datetime=date_and_time,
                     description=description,
                     image_src=img_src,
+                    release_year=release_year,
                 )
                 showtimes.append(showtime)
 
