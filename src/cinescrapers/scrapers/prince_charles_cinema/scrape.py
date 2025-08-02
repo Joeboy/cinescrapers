@@ -95,6 +95,4 @@ def scrape() -> list[ShowTime]:
         page.close()
         browser.close()
 
-    print(showtimes)
-    xxx
     return showtimes

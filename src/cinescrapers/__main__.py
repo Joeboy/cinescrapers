@@ -197,6 +197,7 @@ def ensure_showtimes_table_exists():
                 description TEXT,
                 image_src TEXT,
                 thumbnail TEXT,
+                release_year INTEGER,
                 last_updated TEXT NOT NULL,
                 scraper TEXT NOT NULL,
                 tmdb_id INTEGER
@@ -326,14 +327,15 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     with sqlite3.connect("showtimes.db") as conn:
         cursor = conn.cursor()
         query = """
-            INSERT INTO showtimes (id, cinema_shortcode, title, norm_title, link, datetime, description, image_src, thumbnail, last_updated, scraper)
-            VALUES (:id, :cinema_shortcode, :title, :norm_title, :link, :datetime, :description, :image_src, :thumbnail, :last_updated, :scraper)
+            INSERT INTO showtimes (id, cinema_shortcode, title, norm_title, link, datetime, description, image_src, thumbnail, release_year, last_updated, scraper)
+            VALUES (:id, :cinema_shortcode, :title, :norm_title, :link, :datetime, :description, :image_src, :thumbnail, :release_year, :last_updated, :scraper)
             ON CONFLICT(id) DO UPDATE SET
                 link = excluded.link,
                 norm_title = excluded.norm_title,
                 description = excluded.description,
                 image_src = excluded.image_src,
                 thumbnail = excluded.thumbnail,
+                release_year = excluded.release_year,
                 last_updated = excluded.last_updated,
                 scraper = excluded.scraper
 
