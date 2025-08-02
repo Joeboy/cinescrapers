@@ -40,13 +40,13 @@ def tmdb_image_from_path(image_path: str) -> Image.Image:
     return im
 
 
-def search_tmdb_by_title(title, year=None) -> list[dict]:
+def search_tmdb_by_title(title, year: int | None = None) -> list[dict]:
     """Search TMDB for a movie by title and optional year"""
     search_url = f"{TMDB_BASE_URL}/search/movie"
     params = {"api_key": TMDB_API_KEY, "query": title}
 
     if year:
-        params["year"] = year
+        params["primary_release_year"] = str(year)
 
     response = requests.get(search_url, params=params)
     response.raise_for_status()
@@ -189,19 +189,40 @@ def get_similarity_score(
 
 def get_best_tmdb_match(showtime: EnrichedShowTime, images_cache: Path) -> dict | None:
     """Find the best TMDB match for a showtime data entry"""
-    tmdb_results = search_tmdb_by_title(showtime.norm_title)
+    if showtime.release_year:
+        # It turns out the release year isn't super-reliable. Let's also try adjacent years
+        tmdb_results = (
+            search_tmdb_by_title(title=showtime.norm_title, year=showtime.release_year)
+            + search_tmdb_by_title(
+                title=showtime.norm_title, year=showtime.release_year - 1
+            )
+            + search_tmdb_by_title(
+                title=showtime.norm_title, year=showtime.release_year + 1
+            )
+        )
+    else:
+        tmdb_results = search_tmdb_by_title(title=showtime.norm_title)
 
     # Discard any results that don't have a title (which seems to happen)
     tmdb_results = [r for r in tmdb_results if r["title"].strip()]
 
     # Let's discard anyhing that isn't an exact title match
-    tmdb_results = [
+    tmdb_results_filtered = [
         r for r in tmdb_results if normalize_title(r["title"]) == showtime.norm_title
     ]
-    if len(tmdb_results) == 0:
+    if tmdb_results_filtered == [] and showtime.release_year:
+        # If we have no results but we have the year, let's try again but
+        # without constraining to identical titles
+        tmdb_results_filtered = tmdb_results
+
+    if tmdb_results_filtered == []:
+        print(
+            f"No TMDB results found for {showtime.norm_title} ({showtime.release_year})"
+        )
         return None
+
     results_with_scores = []
-    for tmdb_result in tmdb_results:
+    for tmdb_result in tmdb_results_filtered:
         similarity_score = get_similarity_score(showtime, tmdb_result, images_cache)
         print(f"Similarity score for {showtime.norm_title}: {similarity_score}")
         tmdb_result["similarity_score"] = similarity_score

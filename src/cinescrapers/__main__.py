@@ -414,6 +414,7 @@ def grab_tmdb_ids_cmd():
         cursor.execute("SELECT * FROM showtimes")
         rows = cursor.fetchall()
         num_showtimes = len(rows)
+        num_found = 0
         for i, row in enumerate(rows):
             print(f"{i} of {num_showtimes}, {row['title']}")
             showtime = EnrichedShowTime(**row)
@@ -430,6 +431,7 @@ def grab_tmdb_ids_cmd():
             if showtime.tmdb_id:
                 print("Skipping, db already has TMDB ID")
                 # The tmdb_id for this db row is already in the db
+                num_found += 1
                 continue
             if movie_hash in tmdb_id_cache.keys():
                 print(f"'{showtime.norm_title}' Found in file cache")
@@ -444,6 +446,7 @@ def grab_tmdb_ids_cmd():
                 else:
                     showtime_tmdb_id = None
             if showtime_tmdb_id:
+                num_found += 1
                 print(f"Found TMDB ID: {showtime_tmdb_id} for {showtime.norm_title}")
                 cursor.execute(
                     "UPDATE showtimes SET tmdb_id = ? WHERE id = ?",
@@ -459,7 +462,7 @@ def grab_tmdb_ids_cmd():
         TMDB_ID_CACHE.write_text(json.dumps(tmdb_id_cache, indent=2))
         cursor.connection.commit()
     print(
-        f"Updated TMDB IDs for all showtimes in {humanize.naturaldelta(time.perf_counter() - t1)}."
+        f"Found {num_found} TMDB IDs of {num_showtimes} showtimes ({num_found / num_showtimes * 100:.2f}%) in {humanize.naturaldelta(time.perf_counter() - t1)}."
     )
 
 
