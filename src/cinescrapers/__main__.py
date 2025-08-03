@@ -20,13 +20,11 @@ from cinescrapers.config import (
     MAX_STALENESS,
     THUMBNAILS_FOLDER,
     TMDB_ID_CACHE,
-    TMDB_RECOMMENDATIONS_CACHE,
     TMDB_RECOMMENDATIONS_FILTERED,
 )
 from cinescrapers.tmdb_utils import (
     get_all_tmdb_recommendations,
     get_best_tmdb_match,
-    get_tmdb_recommendations,
 )
 from cinescrapers.indexnow import submit_to_indexnow
 from cinescrapers.sitemap import generate_sitemap
