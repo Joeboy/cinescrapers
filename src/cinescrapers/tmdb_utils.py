@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import sqlite3
+from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 
@@ -42,6 +43,7 @@ def tmdb_image_from_path(image_path: str) -> Image.Image:
     return im
 
 
+@lru_cache(maxsize=None)
 def search_tmdb_by_title(title, year: int | None = None) -> list[dict]:
     """Search TMDB for a movie by title and optional year"""
     search_url = f"{TMDB_BASE_URL}/search/movie"
@@ -82,6 +84,7 @@ def get_tmdb_movie_details(tmdb_id) -> dict:
     return response.json()
 
 
+@lru_cache(maxsize=None)
 def get_tmdb_recommendations(tmdb_id: int) -> list[dict]:
     """Get movie recommendations from TMDB for a specified movie ID"""
     recommendations_url = f"{TMDB_BASE_URL}/movie/{tmdb_id}/recommendations"

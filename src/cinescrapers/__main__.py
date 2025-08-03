@@ -4,7 +4,6 @@ import importlib
 import json
 import sqlite3
 import time
-from pathlib import Path
 from typing import Callable
 
 import click
