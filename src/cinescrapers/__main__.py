@@ -28,6 +28,7 @@ from cinescrapers.config import (
     TMDB_ID_CACHE,
     TMDB_RECOMMENDATIONS_FILTERED,
 )
+from cinescrapers.database import database_connection, ensure_database_tables
 from cinescrapers.indexnow import submit_to_indexnow
 from cinescrapers.sitemap import generate_sitemap
 from cinescrapers.thumbnailing import smart_square_thumbnail
@@ -185,30 +186,6 @@ def get_unique_identifier(st: ShowTime) -> str:
     return get_hashed(f"{st.cinema_shortcode}-{st.title}-{st.datetime}")
 
 
-def ensure_showtimes_table_exists():
-    with sqlite3.connect(DB_PATH) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS showtimes (
-                id TEXT PRIMARY KEY,
-                cinema_shortcode TEXT NOT NULL,
-                title TEXT NOT NULL,
-                norm_title TEXT,
-                datetime TEXT NOT NULL,
-                link TEXT NOT NULL,
-                description TEXT,
-                image_src TEXT,
-                thumbnail TEXT,
-                release_year INTEGER,
-                last_updated TEXT NOT NULL,
-                scraper TEXT NOT NULL,
-                tmdb_id INTEGER
-            )
-        """
-        )
-
-
 def get_thumbnail(showtime: ShowTime) -> str | None:
     """Grab a copy of the showtime's image and try to thumbnail it"""
 
@@ -331,8 +308,8 @@ def scrape_to_sqlite(scraper_name: str) -> None:
 
     rows = [s.model_dump(mode="json") for s in enriched_showtimes]
 
-    ensure_showtimes_table_exists()
-    with sqlite3.connect(DB_PATH) as conn:
+    ensure_database_tables()
+    with database_connection() as conn:
         cursor = conn.cursor()
         query = """
             INSERT INTO showtimes (id, cinema_shortcode, title, norm_title, link, datetime, description, image_src, thumbnail, release_year, last_updated, scraper)
@@ -358,8 +335,7 @@ def grab_current_showtimes() -> list[EnrichedShowTime]:
     this_morning_str = this_morning.isoformat(timespec="seconds")
     three_months_time = this_morning + datetime.timedelta(days=90)
     three_months_time_str = three_months_time.isoformat(timespec="seconds")
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
+    with database_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -421,8 +397,7 @@ def grab_tmdb_ids_cmd():
     """Grab TMDB IDs for all showtimes"""
     t1 = time.perf_counter()
     tmdb_id_cache = json.loads(TMDB_ID_CACHE.read_text())
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
+    with database_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM showtimes")
         rows = cursor.fetchall()
@@ -518,25 +493,25 @@ def refresh_cmd(scrape_all: bool = False):
     t = time.perf_counter()
     now = datetime.datetime.now()
     min_datetime = now - MAX_STALENESS
-    ensure_showtimes_table_exists()
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    ensure_database_tables()
     scrapers_to_run = []
-    for scraper in get_scrapers():
-        if scraper == "rapidapi":
-            # Bad / broken / unfinished scraper
-            continue
-        cursor.execute(
-            "SELECT MAX(last_updated) FROM showtimes WHERE scraper = ?",
-            (scraper,),
-        )
-        (latest_update_str,) = cursor.fetchone()
-        if latest_update_str is None:
-            scrapers_to_run.append(scraper)
-        else:
-            latest_update = datetime.datetime.fromisoformat(latest_update_str)
-            if latest_update < min_datetime or scrape_all:
+    with database_connection() as conn:
+        cursor = conn.cursor()
+        for scraper in get_scrapers():
+            if scraper == "rapidapi":
+                # Bad / broken / unfinished scraper
+                continue
+            cursor.execute(
+                "SELECT MAX(last_updated) FROM showtimes WHERE scraper = ?",
+                (scraper,),
+            )
+            (latest_update_str,) = cursor.fetchone()
+            if latest_update_str is None:
                 scrapers_to_run.append(scraper)
+            else:
+                latest_update = datetime.datetime.fromisoformat(latest_update_str)
+                if latest_update < min_datetime or scrape_all:
+                    scrapers_to_run.append(scraper)
     print(f"Running scrapers: {', '.join(scrapers_to_run)}")
 
     failed = []

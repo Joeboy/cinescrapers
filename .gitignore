@@ -16,15 +16,9 @@ wheels/
 react_app/my-app/node_modules/
 react_app/my-app/dist/
 
-src/showtimes.db
-src/cinescrapers/tmdb_images/*.jpg
 yolov8n.pt
-src/cinescrapers/image_cache/
 tests/thumbnails/test_output_thumbnail.jpg
-src/cinescrapers/scraped_images/
-src/cinescrapers/cinemas.json
-src/cinescrapers/cinescrapers.json
-src/cinescrapers/cinema_map.html
-src/cinescrapers/sitemap.xml
+src/cinescrapers/cache/
+src/cinescrapers/data/
 .env
 .envrc
