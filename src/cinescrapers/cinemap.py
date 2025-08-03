@@ -1,12 +1,11 @@
 import folium
 from pathlib import Path
 from cinescrapers.cinema_details import CINEMAS
+from cinescrapers.config import MAP_HTML
 
 
 def generate_cinema_map() -> None:
     """Generate a map that shows cinema markers with current showtime counts."""
-
-    output_path = Path(__file__).parent / "cinema_map.html"
 
     # Calculate center as midpoint of outer cinemas
     lats = [c.latitude for c in CINEMAS]
@@ -61,5 +60,5 @@ def generate_cinema_map() -> None:
         ).add_to(m)
 
     # Save map to file
-    m.save(output_path)
-    print(f"Cinema map saved to: {output_path}")
+    m.save(MAP_HTML)
+    print(f"Cinema map saved to: {MAP_HTML}")

@@ -16,27 +16,30 @@ from cinescrapers.cinema_details import CINEMAS
 from cinescrapers.cinemap import generate_cinema_map
 from cinescrapers.cinescrapers_types import EnrichedShowTime, ShowTime
 from cinescrapers.config import (
+    CINEMAS_JSON,
+    CINESCRAPERS_ROOT,
+    DB_PATH,
     IMAGES_CACHE,
+    MAP_HTML,
     MAX_STALENESS,
+    SHOWTIMES_JSON,
+    SITEMAP_XML,
     THUMBNAILS_FOLDER,
     TMDB_ID_CACHE,
     TMDB_RECOMMENDATIONS_FILTERED,
-)
-from cinescrapers.tmdb_utils import (
-    get_all_tmdb_recommendations,
-    get_best_tmdb_match,
 )
 from cinescrapers.indexnow import submit_to_indexnow
 from cinescrapers.sitemap import generate_sitemap
 from cinescrapers.thumbnailing import smart_square_thumbnail
 from cinescrapers.title_normalization import normalize_title
+from cinescrapers.tmdb_utils import get_all_tmdb_recommendations, get_best_tmdb_match
 from cinescrapers.upload import get_s3_client, upload_file
 from cinescrapers.utils import get_hashed
 
 
 def get_scrapers() -> list[str]:
     """Get a list of available scraper names."""
-    scrapers_dir = Path(__file__).parent / "scrapers"
+    scrapers_dir = CINESCRAPERS_ROOT / "scrapers"
     possible_scrapers = [
         folder.name
         for folder in scrapers_dir.iterdir()
@@ -74,7 +77,7 @@ def print_stats() -> None:
         one_months_time = now.replace(month=now.month + 1)
     one_month_num_days = (one_months_time - now).days
 
-    with sqlite3.connect("showtimes.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM showtimes")
         showtimes_total_count = cursor.fetchone()[0]
@@ -183,7 +186,7 @@ def get_unique_identifier(st: ShowTime) -> str:
 
 
 def ensure_showtimes_table_exists():
-    with sqlite3.connect("showtimes.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -291,7 +294,7 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     """Run a scraper and insert the results into an sqlite db"""
     t = time.perf_counter()
     scraper = get_scraper(scraper_name)
-    with sqlite3.connect("showtimes.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute("""DELETE FROM showtimes WHERE scraper = ?""", (scraper_name,))
         print("Deleted old showtimes for scraper:", scraper_name)
@@ -329,7 +332,7 @@ def scrape_to_sqlite(scraper_name: str) -> None:
     rows = [s.model_dump(mode="json") for s in enriched_showtimes]
 
     ensure_showtimes_table_exists()
-    with sqlite3.connect("showtimes.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         query = """
             INSERT INTO showtimes (id, cinema_shortcode, title, norm_title, link, datetime, description, image_src, thumbnail, release_year, last_updated, scraper)
@@ -355,7 +358,7 @@ def grab_current_showtimes() -> list[EnrichedShowTime]:
     this_morning_str = this_morning.isoformat(timespec="seconds")
     three_months_time = this_morning + datetime.timedelta(days=90)
     three_months_time_str = three_months_time.isoformat(timespec="seconds")
-    with sqlite3.connect("showtimes.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute(
@@ -378,8 +381,7 @@ def export_json() -> None:
     assert len(set(cinema_shortcodes)) == len(CINEMAS)
 
     cinemas_data = [c.model_dump() for c in CINEMAS]
-    cinemas_file = Path(__file__).parent / "cinemas.json"
-    cinemas_file.write_text(json.dumps(cinemas_data))
+    CINEMAS_JSON.write_text(json.dumps(cinemas_data))
 
     recommendations = get_all_tmdb_recommendations()
     TMDB_RECOMMENDATIONS_FILTERED.write_text(json.dumps(recommendations))
@@ -399,9 +401,7 @@ def export_json() -> None:
 
         showtimes_json.append(j)
 
-    showtimes_file = Path(__file__).parent / "cinescrapers.json"
-    with showtimes_file.open("w") as f:
-        json.dump(showtimes_json, f)
+    SHOWTIMES_JSON.write_text(json.dumps(showtimes_json))
 
 
 @click.group()
@@ -421,7 +421,7 @@ def grab_tmdb_ids_cmd():
     """Grab TMDB IDs for all showtimes"""
     t1 = time.perf_counter()
     tmdb_id_cache = json.loads(TMDB_ID_CACHE.read_text())
-    with sqlite3.connect("showtimes.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM showtimes")
@@ -500,7 +500,7 @@ def stats_cmd():
 @cli.command("list-films")
 def list_films_cmd():
     """List all films in the database"""
-    with sqlite3.connect("showtimes.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT title FROM showtimes ORDER BY title")
         results = cursor.fetchall()
@@ -519,7 +519,7 @@ def refresh_cmd(scrape_all: bool = False):
     now = datetime.datetime.now()
     min_datetime = now - MAX_STALENESS
     ensure_showtimes_table_exists()
-    conn = sqlite3.connect("showtimes.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     scrapers_to_run = []
     for scraper in get_scrapers():
@@ -570,37 +570,32 @@ def upload():
     # "content-encoding: gzip" header.
 
     s3_client = get_s3_client()
-    cinemas_json_path = Path(__file__).parent / "cinemas.json"
-    cinescrapers_json_path = Path(__file__).parent / "cinescrapers.json"
-    sitemap_xml_path = Path(__file__).parent / "sitemap.xml"
-    map_html_path = Path(__file__).parent / "cinema_map.html"
     generate_cinema_map()
     generate_sitemap()
-    assert cinemas_json_path.exists()
-    assert cinescrapers_json_path.exists()
-    assert sitemap_xml_path.exists()
-    assert map_html_path.exists()
+    assert CINEMAS_JSON.exists()
     assert TMDB_RECOMMENDATIONS_FILTERED.exists()
+    assert SITEMAP_XML.exists()
+    assert MAP_HTML.exists()
 
     upload_file(
         s3_client,
-        cinemas_json_path,
-        cinemas_json_path.name,
+        CINEMAS_JSON,
+        CINEMAS_JSON.name,
     )
     upload_file(
         s3_client,
-        cinescrapers_json_path,
-        cinescrapers_json_path.name,
+        SHOWTIMES_JSON,
+        SHOWTIMES_JSON.name,
     )
     upload_file(
         s3_client,
-        sitemap_xml_path,
-        sitemap_xml_path.name,
+        SITEMAP_XML,
+        SITEMAP_XML.name,
     )
     upload_file(
         s3_client,
-        map_html_path,
-        map_html_path.name,
+        MAP_HTML,
+        MAP_HTML.name,
     )
     upload_file(
         s3_client, TMDB_RECOMMENDATIONS_FILTERED, TMDB_RECOMMENDATIONS_FILTERED.name

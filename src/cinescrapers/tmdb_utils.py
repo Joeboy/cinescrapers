@@ -13,13 +13,12 @@ from rich import print
 from sentence_transformers import SentenceTransformer
 
 from cinescrapers.cinescrapers_types import EnrichedShowTime
-from cinescrapers.config import TMDB_RECOMMENDATIONS_CACHE
+from cinescrapers.config import DB_PATH, TMDB_IMAGE_PATH, TMDB_RECOMMENDATIONS_CACHE
 from cinescrapers.title_normalization import normalize_title
 
 TMDB_API_KEY = os.environ["TMDB_API_KEY"]
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
-TMDB_IMAGE_PATH = Path(__file__).parent / "tmdb_images"
-TMDB_IMAGE_PATH.mkdir(exist_ok=True)
+
 last_year = datetime.datetime.now().year - 1
 
 
@@ -99,7 +98,7 @@ def get_tmdb_recommendations(tmdb_id: int) -> list[dict]:
 def get_all_tmdb_recommendations():
     """Get tmdb recommendations for all TMDB IDs in the database"""
     cache = json.loads(TMDB_RECOMMENDATIONS_CACHE.read_text())
-    with sqlite3.connect("showtimes.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(
             "SELECT DISTINCT tmdb_id FROM showtimes WHERE tmdb_id IS NOT NULL"

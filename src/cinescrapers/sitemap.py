@@ -1,14 +1,12 @@
 import datetime
-from pathlib import Path
 
 from cinescrapers.cinema_details import CINEMAS
+from cinescrapers.config import SITEMAP_XML, SITEMAP_XML_TEMPLATE
 
 
 def generate_sitemap():
     """Generate a sitemap.xml file"""
-    output_path = Path(__file__).parent / "sitemap.xml"
-    template_path = Path(__file__).parent / "sitemap.xml.template"
-    template = template_path.read_text()
+    template = SITEMAP_XML_TEMPLATE.read_text()
 
     cinema_page_sitemaps = "\n".join(
         f"""
@@ -32,5 +30,5 @@ def generate_sitemap():
     sitemap_content = template.replace(
         "<!-- CINEMA PAGES -->", cinema_page_sitemaps
     ).replace("<!-- TODAY -->", datetime.datetime.now().date().isoformat())
-    output_path.write_text(sitemap_content)
-    print(f"Sitemap generated at {output_path}")
+    SITEMAP_XML.write_text(sitemap_content)
+    print(f"Sitemap generated at {SITEMAP_XML}")
