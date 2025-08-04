@@ -13,7 +13,7 @@ from PIL import Image
 from rich import print
 from sentence_transformers import SentenceTransformer
 
-from cinescrapers.cinescrapers_types import EnrichedShowTime
+from cinescrapers.cinescrapers_types import EnrichedShowTime, TmdbItemFeatures
 from cinescrapers.config import DB_PATH, TMDB_IMAGE_PATH, TMDB_RECOMMENDATIONS_CACHE
 from cinescrapers.title_normalization import normalize_title
 
@@ -154,11 +154,11 @@ def get_clip_embedding(im: Image.Image) -> torch.Tensor:
     return image_features / image_features.norm(dim=-1, keepdim=True)
 
 
-def get_similarity_score(
+def get_tmdb_features(
     showtime: EnrichedShowTime,
     tmdb_data: dict,
     images_cache: Path,
-) -> float:
+) -> TmdbItemFeatures:
     """Calculate cosine similarity score between text and image embeddings"""
 
     description_embedding = get_sentence_embedding(showtime.description)
@@ -198,8 +198,6 @@ def get_similarity_score(
             backdrop_similarity = torch.nn.functional.cosine_similarity(
                 showtime_image_embedding, backdrop_embedding
             )
-        print(f"Poster similarity: {poster_similarity}")
-        print(f"Backdrop similarity: {backdrop_similarity}")
         max_image_similarity = max(
             poster_similarity.item() if poster_similarity is not None else 0,
             backdrop_similarity.item() if backdrop_similarity is not None else 0,
@@ -207,38 +205,25 @@ def get_similarity_score(
 
     print(f"Max image similarity: {max_image_similarity}")
 
-    # Increase points if films have similar overviews:
-    if overview_similarity > 0.2:
-        overview_similarity_points = (overview_similarity - 0.2) * 1.0 / 0.8
-    else:
-        overview_similarity_points = 0.0
-    print(f"Adding {overview_similarity_points} points for overview similarity")
-
-    # increase points if either image is similar to the showtime image:
-    if max_image_similarity > 0.65:
-        image_similarity_points = (max_image_similarity - 0.65) * 1.0 / 0.35
-    else:
-        image_similarity_points = 0.0
-    print(f"Adding {image_similarity_points} points for image similarity")
-
     release_date = tmdb_data.get("release_date")
-    recency_points = 0.0
+    is_recent = False
     if release_date:
         release_year = int(release_date.split("-")[0])
         if release_year >= last_year:
             # If it's a recent film, that makes it more likely to be showing
-            recency_points = 0.1
-    print(f"Adding {recency_points} points for recency")
+            is_recent = True
+        else:
+            is_recent = False
+    else:
+        is_recent = False
 
-    vote_count = tmdb_data["vote_count"]
-    vote_count_points = 0.1 * (vote_count > 100)
-    print(f"Adding {vote_count_points} points for vote count")
-
-    return (
-        overview_similarity_points
-        + image_similarity_points
-        + recency_points
-        + vote_count_points
+    return TmdbItemFeatures(
+        tmdb_id=tmdb_data["id"],
+        overview_embed_similarity=overview_similarity,
+        overview_tf_similarity=0.0,  # Not used yet
+        image_embed_similarity=max_image_similarity,
+        is_recent=is_recent,
+        vote_count=tmdb_data["vote_count"],
     )
 
 
@@ -278,7 +263,9 @@ def get_best_tmdb_match(showtime: EnrichedShowTime, images_cache: Path) -> dict 
 
     results_with_scores = []
     for tmdb_result in tmdb_results_filtered:
-        similarity_score = get_similarity_score(showtime, tmdb_result, images_cache)
+        similarity_score = get_tmdb_features(
+            showtime, tmdb_result, images_cache
+        ).get_score()
         print(f"Similarity score for {showtime.norm_title}: {similarity_score}")
         tmdb_result["similarity_score"] = similarity_score
         results_with_scores.append(tmdb_result)

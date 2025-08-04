@@ -2,7 +2,6 @@ import concurrent.futures
 import datetime
 import importlib
 import json
-import sqlite3
 import time
 from typing import Callable
 
@@ -17,7 +16,6 @@ from cinescrapers.cinescrapers_types import EnrichedShowTime, ShowTime
 from cinescrapers.config import (
     CINEMAS_JSON,
     CINESCRAPERS_ROOT,
-    DB_PATH,
     IMAGES_CACHE,
     MAP_HTML,
     MAX_STALENESS,
@@ -77,7 +75,7 @@ def print_stats() -> None:
         one_months_time = now.replace(month=now.month + 1)
     one_month_num_days = (one_months_time - now).days
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with database_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM showtimes")
         showtimes_total_count = cursor.fetchone()[0]
@@ -135,7 +133,8 @@ def print_stats() -> None:
             f"The filmhose.uk database has {showtimes_month_count} showtimes for this month,"
             f" averaging about {showtimes_month_count // one_month_num_days} showtimes per day. "
             f"That's {total_titles_next_month} titles, an average of "
-            f"{avg_films_per_day} different films per day, across {len(cinema_shortcodes)} cinemas."
+            f"{avg_films_per_day} different films per day, across {len(cinema_shortcodes)} "
+            f"London cinemas."
         )
         print(tweet_text)
 
@@ -269,8 +268,9 @@ def get_thumbnail(showtime: ShowTime) -> str | None:
 def scrape_to_sqlite(scraper_name: str) -> None:
     """Run a scraper and insert the results into an sqlite db"""
     t = time.perf_counter()
+    ensure_database_tables()
     scraper = get_scraper(scraper_name)
-    with sqlite3.connect(DB_PATH) as conn:
+    with database_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""DELETE FROM showtimes WHERE scraper = ?""", (scraper_name,))
         print("Deleted old showtimes for scraper:", scraper_name)
@@ -307,7 +307,6 @@ def scrape_to_sqlite(scraper_name: str) -> None:
 
     rows = [s.model_dump(mode="json") for s in enriched_showtimes]
 
-    ensure_database_tables()
     with database_connection() as conn:
         cursor = conn.cursor()
         query = """
@@ -474,11 +473,11 @@ def stats_cmd():
 @cli.command("list-films")
 def list_films_cmd():
     """List all films in the database"""
-    with sqlite3.connect(DB_PATH) as conn:
+    with database_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT title FROM showtimes ORDER BY title")
+        cursor.execute("SELECT norm_title FROM showtimes ORDER BY norm_title")
         results = cursor.fetchall()
-    titles = sorted(set(normalize_title(title) for (title,) in results))
+    titles = sorted(set(title for (title,) in results))
     for title in titles:
         print(title)
 
