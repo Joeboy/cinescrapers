@@ -12,6 +12,8 @@ def database_connection() -> Iterator[sqlite3.Connection]:
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL;")
+
     try:
         yield conn
         conn.commit()
@@ -48,8 +50,24 @@ def ensure_database_tables() -> None:
                 last_updated TEXT NOT NULL,
                 scraper TEXT NOT NULL,
                 tmdb_id INTEGER
+            )"""
+        )
+
+        # This represents some features calculated from a possible TMDB match
+        # For use in analysis and eventually training a model to match
+        # showtimes with TMDB IDs
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS tmdb_features (
+                norm_title TEXT,
+                tmdb_id INTEGER,
+                overview_embed_similarity REAL,
+                overview_tf_similarity REAL,
+                image_embed_similarity REAL,
+                is_recent BOOLEAN,
+                vote_count integer,
+                vote_average REAL,
+                is_correct BOOLEAN
             )
         """
         )
-
-        conn.commit()

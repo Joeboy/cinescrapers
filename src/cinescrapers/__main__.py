@@ -426,6 +426,7 @@ def grab_tmdb_ids_cmd():
                 print(
                     f"'{showtime.norm_title}' Not found in file cache, searching TMDB"
                 )
+                conn.commit()  # Avoid locked db error in get_best_tmdb_match()
                 best_match = get_best_tmdb_match(showtime, IMAGES_CACHE)
                 if best_match:
                     showtime_tmdb_id = best_match["id"]

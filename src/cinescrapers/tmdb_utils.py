@@ -15,6 +15,7 @@ from sentence_transformers import SentenceTransformer
 
 from cinescrapers.cinescrapers_types import EnrichedShowTime, TmdbItemFeatures
 from cinescrapers.config import DB_PATH, TMDB_IMAGE_PATH, TMDB_RECOMMENDATIONS_CACHE
+from cinescrapers.database import database_connection
 from cinescrapers.title_normalization import normalize_title
 
 TMDB_API_KEY = os.environ["TMDB_API_KEY"]
@@ -220,7 +221,7 @@ def get_tmdb_features(
     return TmdbItemFeatures(
         tmdb_id=tmdb_data["id"],
         overview_embed_similarity=overview_similarity,
-        overview_tf_similarity=0.0,  # Not used yet
+        overview_tf_similarity=0.0,  # TODO: Calculate tf-idf similarity
         image_embed_similarity=max_image_similarity,
         is_recent=is_recent,
         vote_count=tmdb_data["vote_count"],
@@ -263,12 +264,39 @@ def get_best_tmdb_match(showtime: EnrichedShowTime, images_cache: Path) -> dict 
 
     results_with_scores = []
     for tmdb_result in tmdb_results_filtered:
-        similarity_score = get_tmdb_features(
-            showtime, tmdb_result, images_cache
-        ).get_score()
+        tmdb_features = get_tmdb_features(showtime, tmdb_result, images_cache)
+        similarity_score = tmdb_features.get_score()
         print(f"Similarity score for {showtime.norm_title}: {similarity_score}")
         tmdb_result["similarity_score"] = similarity_score
+        tmdb_result["features"] = tmdb_features
         results_with_scores.append(tmdb_result)
 
     results_with_scores.sort(key=lambda x: x["similarity_score"], reverse=True)
+    results_with_scores[0][
+        "is_correct"
+    ] = True  # For now let's assume the best match is correct
+
+    with database_connection() as conn:
+        cursor = conn.cursor()
+        rows_to_insert = [
+            (
+                showtime.norm_title,
+                result["features"].tmdb_id,
+                result["features"].overview_embed_similarity,
+                result["features"].overview_tf_similarity,
+                result["features"].image_embed_similarity,
+                result["features"].is_recent,
+                result["features"].vote_count,
+                result.get("is_correct", False),
+            )
+            for result in results_with_scores
+        ]
+        cursor.executemany(
+            "INSERT INTO tmdb_features (norm_title, tmdb_id, overview_embed_similarity, "
+            "overview_tf_similarity, image_embed_similarity, is_recent, vote_count, is_correct) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            rows_to_insert,
+        )
+        conn.commit()
+
     return results_with_scores[0]
