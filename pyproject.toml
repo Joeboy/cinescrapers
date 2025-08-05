@@ -21,6 +21,7 @@ dependencies = [
     "rich>=14.0.0",
     "scikit-learn>=1.7.1",
     "sentence-transformers>=5.0.0",
+    "spacy>=3.8.7",
     "ultralytics>=8.3.163",
     "ydata-profiling>=4.16.1",
 ]
