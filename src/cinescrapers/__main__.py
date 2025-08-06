@@ -22,7 +22,6 @@ from cinescrapers.config import (
     SHOWTIMES_JSON,
     SITEMAP_XML,
     THUMBNAILS_FOLDER,
-    TMDB_ID_CACHE,
     TMDB_RECOMMENDATIONS_FILTERED,
 )
 from cinescrapers.database import database_connection, ensure_database_tables
@@ -30,9 +29,12 @@ from cinescrapers.indexnow import submit_to_indexnow
 from cinescrapers.sitemap import generate_sitemap
 from cinescrapers.thumbnailing import smart_square_thumbnail
 from cinescrapers.title_normalization import normalize_title
-from cinescrapers.tmdb_utils import get_all_tmdb_recommendations, get_best_tmdb_match
 from cinescrapers.upload import get_s3_client, upload_file
 from cinescrapers.utils import get_hashed
+from cinescrapers.xmdb_integration.utils import (
+    get_all_tmdb_recommendations,
+    grab_tmdb_ids,
+)
 
 
 def get_scrapers() -> list[str]:
@@ -392,67 +394,7 @@ def export_json_cmd():
 
 @cli.command("grab_tmdb_ids")
 def grab_tmdb_ids_cmd():
-    """Grab TMDB IDs for all showtimes"""
-    t1 = time.perf_counter()
-    tmdb_id_cache = json.loads(TMDB_ID_CACHE.read_text())
-    with database_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM showtimes")
-        rows = cursor.fetchall()
-        num_showtimes = len(rows)
-        num_found = 0
-        for i, row in enumerate(rows, start=1):
-            print(f"{i} of {num_showtimes}, {row['title']}")
-            showtime = EnrichedShowTime(**row)
-
-            # I think we can assume that movie listings with the same
-            # norm_title, description and image are pretty definitely for the
-            # same movie
-            movie_id_str = (
-                f"{showtime.norm_title}-{showtime.description}-{showtime.image_src}"
-            )
-            movie_hash = get_hashed(movie_id_str)
-            print(f"{showtime.norm_title} -> {movie_hash}")
-
-            if showtime.tmdb_id:
-                print("Skipping, db already has TMDB ID")
-                # The tmdb_id for this db row is already in the db
-                num_found += 1
-                continue
-            if movie_hash in tmdb_id_cache.keys():
-                print(f"'{showtime.norm_title}' Found in file cache")
-                showtime_tmdb_id = tmdb_id_cache[movie_hash]
-            else:
-                print(
-                    f"'{showtime.norm_title}' Not found in file cache, searching TMDB"
-                )
-                conn.commit()  # Avoid locked db error in get_best_tmdb_match()
-                best_match = get_best_tmdb_match(showtime, IMAGES_CACHE)
-                if best_match:
-                    showtime_tmdb_id = best_match["id"]
-                else:
-                    showtime_tmdb_id = None
-            if showtime_tmdb_id:
-                num_found += 1
-                print(
-                    f"Found TMDB https://www.themoviedb.org/movie/{showtime_tmdb_id} for {showtime.norm_title}"
-                )
-                cursor.execute(
-                    "UPDATE showtimes SET tmdb_id = ? WHERE id = ?",
-                    (showtime_tmdb_id, showtime.id),
-                )
-                tmdb_id_cache[movie_hash] = showtime_tmdb_id
-
-            if not i % 100:
-                cursor.connection.commit()
-                print("writing file cache")
-                TMDB_ID_CACHE.write_text(json.dumps(tmdb_id_cache, indent=2))
-
-        TMDB_ID_CACHE.write_text(json.dumps(tmdb_id_cache, indent=2))
-        cursor.connection.commit()
-    print(
-        f"Found {num_found} TMDB IDs of {num_showtimes} showtimes ({num_found / num_showtimes * 100:.2f}%) in {humanize.naturaldelta(time.perf_counter() - t1)}."
-    )
+    grab_tmdb_ids()
 
 
 @cli.command("list-scrapers")

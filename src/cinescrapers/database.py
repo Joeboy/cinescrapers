@@ -61,6 +61,7 @@ def ensure_database_tables() -> None:
             CREATE TABLE IF NOT EXISTS tmdb_features (
                 norm_title TEXT,
                 tmdb_id INTEGER,
+                showtime_id TEXT,
                 overview_embed_similarity REAL,
                 overview_ner_similarity REAL,
                 image_embed_similarity REAL,
@@ -73,5 +74,6 @@ def ensure_database_tables() -> None:
                 runtime INTEGER,
                 has_description BOOLEAN,
                 is_correct BOOLEAN
+                --FOREIGN KEY (showtime_id) REFERENCES showtimes(id)--
             )"""
         )

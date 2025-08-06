@@ -2,7 +2,7 @@ import datetime
 
 from pydantic import BaseModel, computed_field
 
-from .utils import extract_uk_postcode
+from .utils import extract_uk_postcode, get_hashed
 
 
 class Cinema(BaseModel):
@@ -45,6 +45,12 @@ class EnrichedShowTime(ShowTime):
     norm_title: str  # Normalized title for matching / sorting
     thumbnail: str | None
     tmdb_id: int | None = None  # TMDB ID for the film, if available
+
+    def movie_hash(self) -> str:
+        """Unique ID just representing a distinct film. Will likely be different
+        across cinemas, but should usually be the same for the same film at the
+        same cinema. We can use it to avoid matching to tmdb ids multiple times"""
+        return get_hashed(f"{self.norm_title}-{self.description}-{self.image_src}")
 
 
 class TmdbItemFeatures(BaseModel):
