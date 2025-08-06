@@ -62,12 +62,16 @@ def ensure_database_tables() -> None:
                 norm_title TEXT,
                 tmdb_id INTEGER,
                 overview_embed_similarity REAL,
-                overview_tf_similarity REAL,
+                overview_ner_similarity REAL,
                 image_embed_similarity REAL,
+                release_year INTEGER,
                 is_recent BOOLEAN,
-                vote_count integer,
+                vote_count INTEGER,
                 vote_average REAL,
+                popularity REAL,
+                video BOOLEAN,
+                runtime INTEGER,
+                has_description BOOLEAN,
                 is_correct BOOLEAN
-            )
-        """
+            )"""
         )

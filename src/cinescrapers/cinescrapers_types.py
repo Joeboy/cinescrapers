@@ -52,10 +52,19 @@ class TmdbItemFeatures(BaseModel):
 
     tmdb_id: int
     overview_embed_similarity: float
-    overview_tf_similarity: float
+    overview_ner_similarity: float
     image_embed_similarity: float
+    release_year: int | None
     is_recent: bool
     vote_count: int
+    vote_average: float | None
+    popularity: float
+    # "video" probably means it's not a feature film
+    video: bool
+    # Short runtime means it's not a feature film
+    runtime: int
+    # Movies without descriptions are likely to be non-notable
+    has_description: bool
 
     def get_score(self) -> float:
         """Ghetto calculation of an overall score based on various features"""

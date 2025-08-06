@@ -401,7 +401,7 @@ def grab_tmdb_ids_cmd():
         rows = cursor.fetchall()
         num_showtimes = len(rows)
         num_found = 0
-        for i, row in enumerate(rows):
+        for i, row in enumerate(rows, start=1):
             print(f"{i} of {num_showtimes}, {row['title']}")
             showtime = EnrichedShowTime(**row)
 

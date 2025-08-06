@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import sqlite3
+import time
 from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
@@ -14,7 +15,12 @@ from rich import print
 from sentence_transformers import SentenceTransformer
 
 from cinescrapers.cinescrapers_types import EnrichedShowTime, TmdbItemFeatures
-from cinescrapers.config import DB_PATH, TMDB_IMAGE_PATH, TMDB_RECOMMENDATIONS_CACHE
+from cinescrapers.config import (
+    DB_PATH,
+    TMDB_DETAILS_CACHE_DIR,
+    TMDB_IMAGE_PATH,
+    TMDB_RECOMMENDATIONS_CACHE,
+)
 from cinescrapers.database import database_connection
 from cinescrapers.title_normalization import normalize_title
 
@@ -76,13 +82,44 @@ def search_tmdb_by_title(title, year: int | None = None) -> list[dict]:
 
 
 def get_tmdb_movie_details(tmdb_id) -> dict:
-    """Get detailed movie information from TMDB by movie ID"""
+    """Get detailed movie information from TMDB by movie ID with file caching"""
+
+    cache_file = TMDB_DETAILS_CACHE_DIR / f"{tmdb_id}.json"
+
+    # Calculate cache expiry based on TMDB ID
+    # Lower IDs means films have been in the db longer, which means they're
+    # less likely to update frequently
+    if tmdb_id < 10000:
+        cache_seconds = 30 * 24 * 3600  # 30 days for very old films
+    elif tmdb_id < 100000:
+        cache_seconds = 14 * 24 * 3600  # 14 days for old films
+    elif tmdb_id < 1000000:
+        cache_seconds = 7 * 24 * 3600  # 7 days for medium age films
+    else:
+        cache_seconds = 1 * 24 * 3600  # 1 day for recent films
+
+    # Check if cached file exists and is not expired
+    if cache_file.exists():
+        file_age = time.time() - cache_file.stat().st_mtime
+        if file_age < cache_seconds:
+            print(f"Using cached data for TMDB ID {tmdb_id}")
+            return json.loads(cache_file.read_text())
+        else:
+            print(f"Cache expired for TMDB ID {tmdb_id}, fetching fresh data")
+
     details_url = f"{TMDB_BASE_URL}/movie/{tmdb_id}"
     params = {"api_key": TMDB_API_KEY}
 
     response = requests.get(details_url, params=params)
     response.raise_for_status()
-    return response.json()
+    data = response.json()
+
+    cache_file.write_text(json.dumps(data))
+    print(
+        f"Cached TMDB details for ID {tmdb_id} (expires in {cache_seconds//3600} hours)"
+    )
+
+    return data
 
 
 @lru_cache(maxsize=None)
@@ -155,18 +192,101 @@ def get_clip_embedding(im: Image.Image) -> torch.Tensor:
     return image_features / image_features.norm(dim=-1, keepdim=True)
 
 
+def get_nlp_model():
+    """Load the spaCy model for named entity recognition"""
+    if not hasattr(get_nlp_model, "_nlp"):
+        import spacy
+
+        model_name = "en_core_web_sm"
+
+        # Check if model is already installed
+        try:
+            get_nlp_model._nlp = spacy.load(model_name)
+            print(f"Loaded existing {model_name} model")
+        except OSError:
+            spacy.cli.download(model_name)  # type: ignore
+            get_nlp_model._nlp = spacy.load(model_name)
+            print(f"Downloaded and loaded {model_name} model")
+
+    return get_nlp_model._nlp
+
+
+def extract_named_entities(text: str) -> list[tuple[str, str]]:
+    """Extract named entities from text using spaCy"""
+    nlp = get_nlp_model()
+    doc = nlp(text)
+    return [(ent.text, ent.label_) for ent in doc.ents]
+
+
+INTERESTING_NER_LABELS = {
+    "PERSON",
+    "GPE",
+    "LOC",
+    "LANGUAGE",
+    "EVENT",
+    "ORG",
+    "NORP",
+    "WORK_OF_ART",
+    "PRODUCT",
+    "FAC",
+    "LAW",
+}
+UNINTERESTING_NER_LABELS = {
+    # These probably don't have much relevance
+    "CARDINAL",
+    "DATE",
+    "QUANTITY",
+    "ORDINAL",
+    "TIME",
+    "MONEY",
+    "PERCENT",
+}
+ALL_NER_LABELS = INTERESTING_NER_LABELS | UNINTERESTING_NER_LABELS
+
+
+def overlapping_ner_features(text1, text2) -> float:
+    ents1 = set(extract_named_entities(text1))
+    ents2 = set(extract_named_entities(text2))
+    all_labels = {label for _, label in ents1 | ents2}
+    assert not all_labels - ALL_NER_LABELS
+
+    valid_ents1 = {
+        (text, label) for text, label in ents1 if label in INTERESTING_NER_LABELS
+    }
+    valid_ents2 = {
+        (text, label) for text, label in ents2 if label in INTERESTING_NER_LABELS
+    }
+
+    common = valid_ents1 & valid_ents2
+
+    # Normalize by average text length (in words)
+    word_count1 = len(text1.split())
+    word_count2 = len(text2.split())
+    avg_word_count = (word_count1 + word_count2) / 2
+
+    if avg_word_count == 0:
+        return 0.0
+
+    # Return overlap count per 100 words (makes numbers more interpretable)
+    return (len(common) / avg_word_count) * 100
+
+
 def get_tmdb_features(
     showtime: EnrichedShowTime,
-    tmdb_data: dict,
+    tmdb_details: dict,
     images_cache: Path,
 ) -> TmdbItemFeatures:
     """Calculate cosine similarity score between text and image embeddings"""
 
     description_embedding = get_sentence_embedding(showtime.description)
-    tmdb_overview_embedding = get_sentence_embedding(tmdb_data["overview"])
+    tmdb_overview_embedding = get_sentence_embedding(tmdb_details["overview"])
     overview_similarity = torch.nn.functional.cosine_similarity(
         description_embedding, tmdb_overview_embedding, dim=0
     ).item()
+
+    overlapping_ner_count = overlapping_ner_features(
+        showtime.description, tmdb_details["overview"]
+    )
 
     showtime_image_src = showtime.thumbnail
     showtime_image_embedding = None
@@ -182,8 +302,8 @@ def get_tmdb_features(
         max_image_similarity = 0
     else:
         # print("Checking result:", result)
-        poster_path = tmdb_data.get("poster_path")
-        backdrop_path = tmdb_data.get("backdrop_path")
+        poster_path = tmdb_details["poster_path"]
+        backdrop_path = tmdb_details["backdrop_path"]
         poster_similarity = None
         backdrop_similarity = None
 
@@ -206,25 +326,29 @@ def get_tmdb_features(
 
     print(f"Max image similarity: {max_image_similarity}")
 
-    release_date = tmdb_data.get("release_date")
+    release_date = tmdb_details["release_date"]
+
     is_recent = False
     if release_date:
         release_year = int(release_date.split("-")[0])
-        if release_year >= last_year:
-            # If it's a recent film, that makes it more likely to be showing
-            is_recent = True
-        else:
-            is_recent = False
+        is_recent = release_year >= last_year
     else:
+        release_year = None
         is_recent = False
 
     return TmdbItemFeatures(
-        tmdb_id=tmdb_data["id"],
+        tmdb_id=tmdb_details["id"],
         overview_embed_similarity=overview_similarity,
-        overview_tf_similarity=0.0,  # TODO: Calculate tf-idf similarity
+        overview_ner_similarity=overlapping_ner_count,
         image_embed_similarity=max_image_similarity,
+        release_year=release_year or showtime.release_year,
+        vote_count=tmdb_details["vote_count"],
+        vote_average=tmdb_details["vote_average"],
+        runtime=tmdb_details["runtime"],
+        has_description=bool(tmdb_details["overview"]),
         is_recent=is_recent,
-        vote_count=tmdb_data["vote_count"],
+        popularity=tmdb_details["popularity"],
+        video=tmdb_details["video"],
     )
 
 
@@ -264,7 +388,12 @@ def get_best_tmdb_match(showtime: EnrichedShowTime, images_cache: Path) -> dict 
 
     results_with_scores = []
     for tmdb_result in tmdb_results_filtered:
-        tmdb_features = get_tmdb_features(showtime, tmdb_result, images_cache)
+        tmdb_id = tmdb_result["id"]
+        tmdb_details = get_tmdb_movie_details(tmdb_id)
+        print(tmdb_details)
+
+        tmdb_features = get_tmdb_features(showtime, tmdb_details, images_cache)
+        print("features:", tmdb_features)
         similarity_score = tmdb_features.get_score()
         print(f"Similarity score for {showtime.norm_title}: {similarity_score}")
         tmdb_result["similarity_score"] = similarity_score
@@ -283,18 +412,25 @@ def get_best_tmdb_match(showtime: EnrichedShowTime, images_cache: Path) -> dict 
                 showtime.norm_title,
                 result["features"].tmdb_id,
                 result["features"].overview_embed_similarity,
-                result["features"].overview_tf_similarity,
+                result["features"].overview_ner_similarity,
                 result["features"].image_embed_similarity,
+                result["features"].release_year,
                 result["features"].is_recent,
                 result["features"].vote_count,
+                result["features"].vote_average,
+                result["features"].popularity,
+                result["features"].video,
+                result["features"].runtime,
+                result["features"].has_description,
                 result.get("is_correct", False),
             )
             for result in results_with_scores
         ]
         cursor.executemany(
             "INSERT INTO tmdb_features (norm_title, tmdb_id, overview_embed_similarity, "
-            "overview_tf_similarity, image_embed_similarity, is_recent, vote_count, is_correct) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "overview_ner_similarity, image_embed_similarity, release_year, is_recent, "
+            "vote_count, vote_average, popularity, video, runtime, has_description, is_correct) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             rows_to_insert,
         )
         conn.commit()
