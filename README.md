@@ -35,6 +35,7 @@ API), please let me know!
 * Prince Charles Cinema
 * Regent Street Cinema
 * Rich Mix
+* Sands Films
 * The Rio
 * The Romford Lumiere
 * Throwley Yard
@@ -48,7 +49,6 @@ API), please let me know!
 * David Lean Cinema
 * Cinema Museum, Kenninton
 * Theatreship, Canary Wharf
-* Sands Films
 
 ## Usage
 
