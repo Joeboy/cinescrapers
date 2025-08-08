@@ -1,6 +1,6 @@
 import datetime
 
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, Field, computed_field
 
 from .utils import extract_uk_postcode
 
@@ -34,6 +34,7 @@ class ShowTime(BaseModel):
     description: str
     image_src: str | None
     release_year: int | None = None
+    imdb_id: str | None = Field(min_length=1, default=None)
 
 
 class EnrichedShowTime(ShowTime):

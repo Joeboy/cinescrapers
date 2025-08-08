@@ -271,6 +271,16 @@ CINEMAS = [
         latitude=51.551013806271335,
         longitude=-0.052535149077327904,
     ),
+    Cinema(
+        shortname="Sands Films Cinema",
+        name="Sands Films Cinema Club",
+        shortcode="SF",
+        url="https://www.sandsfilms.co.uk",
+        address="82 Saint Marychurch St, London SE16 4HZ",
+        phone="02072312209",
+        latitude=51.50158289842746,
+        longitude=-0.053484325056108846,
+    ),
 ]
 
 
