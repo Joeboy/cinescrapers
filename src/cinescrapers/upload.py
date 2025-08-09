@@ -20,21 +20,25 @@ def get_s3_client():
     )
 
 
-def upload_file(s3_client, path: Path, key: str, gz_compression: bool = True):
+def upload_file(s3_client, path: Path, key: str, gz_compression: bool = False):
     content_type, _ = mimetypes.guess_type(path)
     content_type = content_type or "application/octet-stream"
 
     with path.open("rb") as f:
-        if gz_compression:
-            data = gzip.compress(f.read())
-        else:
-            data = f.read()
-        s3_client.put_object(
+        put_object_params = dict(
             Bucket="cinescrapers",
             Key=key,
-            Body=data,
             ContentType=content_type,
-            ContentEncoding="gzip",
             CacheControl="public,max-age=3600",
         )
+        if gz_compression:
+            body = gzip.compress(f.read())
+            put_object_params["ContentEncoding"] = "gzip"
+        else:
+            body = f.read()
+
+        put_object_params["Body"] = body  # type: ignore
+
+        s3_client.put_object(**put_object_params)
+
     print(f"Uploaded: {key}")
